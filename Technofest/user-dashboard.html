@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - KONGU ENGINEERING COLLEGE</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <img src="kongu logo2.png" alt="KEC Logo" class="header-logo">
+        <div class="header-text">
+          <h1>Student Dashboard</h1>
+          <p>Kongu Engineering College</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="welcome-text">Welcome, <span id="studentName">Student</span></span>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="dashboard-grid">
+        <!-- Student Information Card -->
+        <div class="dashboard-card">
+          <h2>Student Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Roll Number:</label>
+              <span id="rollNumber">-</span>
+            </div>
+            <div class="info-item">
+              <label>Name:</label>
+              <span id="studentFullName">-</span>
+            </div>
+            <div class="info-item">
+              <label>Department:</label>
+              <span id="department">-</span>
+            </div>
+            <div class="info-item">
+              <label>Year:</label>
+              <span id="year">-</span>
+            </div>
+            <div class="info-item">
+              <label>Account Created:</label>
+              <span id="createdAt">-</span>
+            </div>
+            <div class="info-item">
+              <label>Last Login:</label>
+              <span id="lastLogin">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="dashboard-card">
+          <h2>Quick Actions</h2>
+          <div class="action-buttons">
+            <button class="action-btn" onclick="showPasswordChangeModal()">
+              <span class="action-icon">🔒</span>
+              Change Password
+            </button>
+            <button class="action-btn" onclick="viewProfile()">
+              <span class="action-icon">👤</span>
+              View Profile
+            </button>
+            <button class="action-btn" onclick="viewNotifications()">
+              <span class="action-icon">🔔</span>
+              Notifications
+            </button>
+            <button class="action-btn" onclick="viewSchedule()">
+              <span class="action-icon">📅</span>
+              Class Schedule
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Activity Card -->
+        <div class="dashboard-card">
+          <h2>Recent Activity</h2>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon">✅</div>
+              <div class="activity-content">
+                <p>Successfully logged in</p>
+                <small id="loginTime">Just now</small>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">📚</div>
+              <div class="activity-content">
+                <p>Course registration completed</p>
+                <small>2 days ago</small>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">📝</div>
+              <div class="activity-content">
+                <p>Assignment submitted</p>
+                <small>1 week ago</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Status Card -->
+        <div class="dashboard-card">
+          <h2>Academic Status</h2>
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="status-number" id="attendancePercentage">85%</div>
+              <div class="status-label">Attendance</div>
+            </div>
+            <div class="status-item">
+              <div class="status-number" id="cgpa">8.5</div>
+              <div class="status-label">CGPA</div>
+            </div>
+            <div class="status-item">
+              <div class="status-number" id="creditsEarned">45</div>
+              <div class="status-label">Credits Earned</div>
+            </div>
+            <div class="status-item">
+              <div class="status-number" id="pendingAssignments">3</div>
+              <div class="status-label">Pending Assignments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Password Change Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Change Password</h2>
+        <button class="close-btn" onclick="closePasswordModal()">&times;</button>
+      </div>
+      <form id="passwordChangeForm">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="newPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Change Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <script src="user-dashboard.js"></script>
+</body>
+</html> 

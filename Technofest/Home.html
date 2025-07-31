@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Information Technology - KEC</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #fff;
+      color: #000;
+    }
+
+    .top-bar {
+      background: #2f2f91;
+      color: #fff;
+      display: flex;
+      justify-content: flex-start;
+      gap: 20px;
+      padding: 8px 30px;
+      font-size: 14px;
+    }
+
+    .top-bar a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .highlight {
+      font-weight: bold;
+    }
+
+    .highlight .new {
+      background: red;
+      color: white;
+      font-size: 10px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+
+    .main-header {
+      position: relative;
+      padding: 20px 30px;
+      border-bottom: 1px solid #ccc;
+      height: 120px;
+    }
+
+    .main-header .logo-left {
+      position: absolute;
+      left: 30px;
+      top: 20px;
+      height: 80px;
+    }
+
+    .main-header .logo-right {
+      position: absolute;
+      right: 30px;
+      top: 20px;
+      height: 80px;
+    }
+
+    .header-text {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .header-text h1 {
+      font-size: 22px;
+      color: #2f2f91;
+      margin-bottom: 5px;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: #000;
+    }
+
+    .main-nav {
+      background: #fff;
+      display: flex;
+      justify-content: flex-start;
+      gap: 25px;
+      padding: 10px 30px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .main-nav a {
+      text-decoration: none;
+      color: #2f2f91;
+      font-weight: bold;
+    }
+
+    .banner {
+      background: #0a0a2a;
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .banner h2 {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .sub-nav {
+      background: #003366;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 10px 0;
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+      border-radius: 6px;
+    }
+
+    .sub-nav a {
+      color: white;
+      text-decoration: none;
+      margin: 5px 10px;
+      font-weight: 700;
+      font-size: 16px;
+      padding-bottom: 2px;
+    }
+
+    .sub-nav a:hover,
+    .sub-nav a:focus {
+      border-bottom: 2px solid #fff;
+    }
+
+    .carousel-container {
+      width: 100%;
+      overflow: hidden;
+      margin: 30px 0;
+    }
+
+    .carousel {
+      display: flex;
+      animation: scroll 25s linear infinite;
+    }
+
+    .carousel img {
+      width: 100%;
+      max-width: 960px;
+      height: 300px;
+      object-fit: cover;
+      flex-shrink: 0;
+      margin-right: 20px;
+      border-radius: 10px;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-400%); }
+    }
+
+    .about {
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .about h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      border-left: 4px solid #003366;
+      padding-left: 10px;
+      color: #003366;
+    }
+
+    .about p {
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    .table-section {
+      max-width: 1000px;
+      margin: auto;
+      padding: 5px 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      text-align: left;
+      background-color: #f0f0f0;
+    }
+
+    h4 {
+      font-size: 20px;
+      color: #003366;
+      border-left: 4px solid #003366;
+      padding-left: 10px;
+      margin: 20px 0 10px;
+    }
+
+    .accordion {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      padding: 5px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 16px;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    .active, .accordion:hover {
+      background-color: #0056b3;
+    }
+
+    .panel {
+      padding: 0 20px;
+      background-color: white;
+      display: none;
+      overflow: hidden;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    .panel ul {
+      padding: 15px 0;
+    }
+
+    .panel li {
+      margin-bottom: 8px;
+    }
+
+    .footer {
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 14px;
+      margin-top: 30px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- College Header -->
+  <header class="main-header">
+    <section class="home" id="home">
+    <img src="kongu logo2.png" alt="Left Logo" class="logo-left" />
+    <div class="header-text">
+      <h1>KONGU ENGINEERING COLLEGE (Autonomous)</h1>
+      <p>
+        Affiliated to Anna University | Accredited by NAAC with A++ Grade<br />
+        Perundurai Erode - 638060 Tamilnadu India
+      </p>
+    </div>
+    <img src="kongu logo.png" alt="Right Logo" class="logo-right" />
+  </header>
+
+  <!-- Department Banner -->
+  <section class="banner">
+    <h2>Information Technology</h2>
+  </section>
+
+  <!-- Sub-navigation -->
+  <nav class="sub-nav">
+    <a href="#home">Home</a>
+    <a href="#"></a>
+    <a href="#about">About Us</a>
+     <a href="#"></a>
+    <a href="Event.html">Events</a>
+     <a href="#"></a>
+     <a href="login.html">Login</a>
+     <a href="#"></a>
+    <a href="#contact">Contact</a>
+    
+  </nav>
+
+  <!-- Image Carousel -->
+   
+  <div class="carousel-container">
+    <div class="carousel">
+      <img src="Kec.jpeg" alt="IT Park Front View 2">
+      <img src="IT1.png" alt="IT Park Front View 1">
+      <img src="IT3.jpg" alt="Information Technology Graphic">
+      <img src="Kec.jpeg" alt="IT Park Front View 2">
+      <img src="IT1.png" alt="IT Park Front View 1">
+      <img src="IT3.jpg" alt="Information Technology Graphic">
+    </div>
+  </div>
+</section>
+  <!-- About Section -->
+  <section class="about" id="about">
+    <h3>About the Department</h3>
+    <p>
+      Information Technology (IT) is a branch of engineering that focuses on the development, management, and security of information systems and digital infrastructure. IT engineers work on cutting-edge technologies such as blockchain, IoT, big data, and automation to enhance efficiency, security, and connectivity across industries. As the demand for scalable, secure, and intelligent solutions increases, Information Technology plays a crucial role in shaping the digital future and improving technological advancements worldwide.
+    </p>
+  </section>
+
+  <section class="about">
+    <h3>About the IT Association</h3>
+    <p>
+      The IT Association serves as a bridge between students and the IT industry by organizing technical seminars, workshops, symposium, industrial visits, guest lectures and cultural activities. It empowers students to develop professional skills, leadership qualities, and stay current with emerging technologies.  
+    </p>
+  </section>
+
+  <section class="about">
+    <h3>About the IT Coding Club</h3>
+    <p>
+      The IT Coding Club nurtures the problem-solving mindset of students by conducting regular coding contests, hackathons, and innovation challenges. It encourages collaboration, hands-on practice, and creative application of coding skills to real-world problems.
+    </p>
+  </section>
+
+  <!-- Department Details Section -->
+    
+  <section class="table-section">
+    <section class="contact" id="contact">
+    <h4>Department Details</h4>
+    <table>
+      <tr><th>HOD</th><td>Dr.S.Anandamurugan</td></tr>
+      <tr><th>Faculty Coordinator</th><td>Dr.G.K.Kamalam & M.Nithyakumar</td></tr>
+    </table>
+</section>
+    <button class="accordion">VISION</button>
+    <div class="panel">
+      <ul>
+        <li>To be a centre of excellence for development and dissemination of knowledge in Information Technology for the nation and beyond.</li>
+      </ul>
+    </div>
+
+    <button class="accordion">MISSION</button>
+    <div class="panel">
+      <ul>
+        <li>To transform the students into innovative, competent and high quality IT professionals to meet the growing global challenges.</li>
+        <li>To impart value-based IT education to the students and enrich their knowledge.</li>
+        <li>To endeavour for continuous upgradation of technical expertise of students to cater to the needs of the society.</li>
+        <li>To achieve an effective interaction with industry for mutual benefits.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 Department of Information Technology, Kongu Engineering College. All Rights Reserved.</p>
+  </footer>
+
+  <!-- Accordion Script -->
+ <!-- Accordion Script -->
+<script>
+  const acc = document.querySelectorAll(".accordion");
+  acc.forEach(btn => {
+    btn.addEventListener("click", function () {
+      this.classList.toggle("active");
+      const panel = this.nextElementSibling;
+      if (panel.style.display === "block") {
+        panel.style.display = "none";
+      } else {
+        panel.style.display = "block";
+      }
+    });
+  });
+
+  // Force scroll to top on page refresh
+  window.onload = function () {
+    window.scrollTo(0, 0);
+  };
+</script>
+
+
+</body>
+</html>
