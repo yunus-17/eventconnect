@@ -118,7 +118,10 @@ function updateLoginTime() {
 
 // Logout functionality
 logoutBtn.addEventListener('click', () => {
-  logout();
+  // Show confirmation alert
+  if (confirm('Are you sure you want to logout?')) {
+    logout();
+  }
 });
 
 async function logout() {

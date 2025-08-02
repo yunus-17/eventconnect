@@ -15,6 +15,7 @@ const API_BASE_URL = window.location.origin;
 typeButtons.forEach(button => {
   button.addEventListener('click', () => {
     const type = button.dataset.type;
+    console.log('Switching to login type:', type);
     
     // Update active button
     typeButtons.forEach(btn => btn.classList.remove('active'));
@@ -24,9 +25,11 @@ typeButtons.forEach(button => {
     if (type === 'student') {
       studentForm.classList.add('active');
       adminForm.classList.remove('active');
+      console.log('Student form activated');
     } else {
       adminForm.classList.add('active');
       studentForm.classList.remove('active');
+      console.log('Admin form activated');
     }
     
     // Clear messages
@@ -50,6 +53,7 @@ studentForm.addEventListener('submit', async (e) => {
 // Admin Login Form Handler
 adminForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  console.log('Admin form submitted');
   
   const formData = new FormData(adminForm);
   const data = {
@@ -57,19 +61,48 @@ adminForm.addEventListener('submit', async (e) => {
     password: formData.get('password')
   };
   
+  console.log('Admin form data:', data);
   await handleLogin('admin', data);
+});
+
+// Additional event listener for admin login button
+document.addEventListener('DOMContentLoaded', () => {
+  const adminLoginBtn = adminForm.querySelector('.login-btn');
+  if (adminLoginBtn) {
+    adminLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      console.log('Admin login button clicked');
+      
+      // Get form data manually
+      const emailInput = document.getElementById('adminEmail');
+      const passwordInput = document.getElementById('adminPassword');
+      
+      const data = {
+        email: emailInput ? emailInput.value.trim() : '',
+        password: passwordInput ? passwordInput.value.trim() : ''
+      };
+      
+      console.log('Manual admin form data:', JSON.stringify(data));
+      await handleLogin('admin', data);
+    });
+  }
 });
 
 // Generic Login Handler
 async function handleLogin(type, data) {
   try {
+    console.log(`Attempting ${type} login with data:`, JSON.stringify(data));
+    
     // Show loading
     showLoading();
     
     // Validate data
     if (!validateLoginData(type, data)) {
+      console.log('Validation failed for', type, 'login');
       return;
     }
+    
+    console.log('Validation passed, making API call to:', `${API_BASE_URL}/api/auth/${type}-login`);
     
     // Make API call
     const response = await fetch(`${API_BASE_URL}/api/auth/${type}-login`, {
@@ -80,7 +113,9 @@ async function handleLogin(type, data) {
       body: JSON.stringify(data)
     });
     
+    console.log('API response status:', response.status);
     const result = await response.json();
+    console.log('API response data:', result);
     
     if (result.success) {
       // Store token and user data
@@ -90,6 +125,8 @@ async function handleLogin(type, data) {
       // Show success message
       showSuccess(result.message);
       
+      console.log('Login successful, redirecting to:', result.redirectTo);
+      
       // Redirect after a short delay
       setTimeout(() => {
         window.location.href = result.redirectTo;
@@ -97,12 +134,13 @@ async function handleLogin(type, data) {
       
     } else {
       // Show error message
+      console.error('Login failed:', result.message);
       showError(result.message || 'Login failed');
     }
     
   } catch (error) {
     console.error('Login error:', error);
-    showError('Network error. Please try again.');
+    showError('Network error. Please check if the server is running and try again.');
   } finally {
     hideLoading();
   }
@@ -110,6 +148,8 @@ async function handleLogin(type, data) {
 
 // Validation Functions
 function validateLoginData(type, data) {
+  console.log(`Validating ${type} login data:`, JSON.stringify(data));
+  
   if (type === 'student') {
     if (!data.rollNumber || !data.password) {
       showError('Please fill in all fields');
@@ -130,11 +170,14 @@ function validateLoginData(type, data) {
     }
     
     // Validate email format
-   const emailPattern = /^[^\s@]+@kongu\.edu$/;
-if (!emailPattern.test(data.email)) {
-  showError('Admin username must be in the format username@kongu.edu');
-  return false;
-}
+    const emailPattern = /^[^\s@]+@kongu\.edu$/;
+    if (!emailPattern.test(data.email)) {
+      showError('Admin username must be in the format username@kongu.edu');
+      return false;
+    }
+  }
+  
+  console.log('Validation passed for', type, 'login');
   return true;
 }
 
@@ -166,7 +209,7 @@ function hideAllMessages() {
   successMessage.style.display = 'none';
 }
 
-// Check if user is already logged in
+// Check if user is already logged in (only clear invalid data, don't redirect)
 function checkAuthStatus() {
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
@@ -174,11 +217,8 @@ function checkAuthStatus() {
   if (token && user) {
     try {
       const userData = JSON.parse(user);
-      if (userData.role === 'student') {
-        window.location.href = '/user-dashboard';
-      } else if (userData.role === 'admin') {
-        window.location.href = '/admin-dashboard';
-      }
+      // Just validate the data, don't redirect from login page
+      console.log('User already logged in:', userData.role);
     } catch (error) {
       // Clear invalid data
       localStorage.removeItem('token');

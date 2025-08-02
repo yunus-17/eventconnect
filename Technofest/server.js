@@ -6,6 +6,8 @@ require('dotenv').config({ path: './config.env' });
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const eventRoutes = require('./routes/events');
+const registrationRoutes = require('./routes/registrations');
 
 // Import models
 const { Student, Admin } = require('./models/User');
@@ -23,10 +25,20 @@ app.use(express.static(path.join(__dirname)));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/registrations', registrationRoutes);
 
 // Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Home.html'));
+});
+
+app.get('/events', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Event.html'));
 });
 
 app.get('/user-dashboard', (req, res) => {
