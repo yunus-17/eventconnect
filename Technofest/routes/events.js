@@ -328,4 +328,113 @@ router.get('/:id/registrations', auth, requireAdmin, async (req, res) => {
   }
 });
 
+// Get event registration analytics
+router.get('/analytics', auth, requireAdmin, async (req, res) => {
+  try {
+    // Get all events with their registration counts
+    const events = await Event.find({});
+    
+    // For each event, get the registration count
+    const eventsWithRegistrations = await Promise.all(events.map(async (event) => {
+      const registrationCount = await Registration.countDocuments({ 
+        event: event._id, 
+        status: { $in: ['registered', 'confirmed', 'attended'] }
+      });
+      
+      return {
+        id: event._id,
+        name: event.title,
+        category: event.category,
+        date: event.startDate,
+        registrations: registrationCount
+      };
+    }));
+    
+    res.json({
+      success: true,
+      data: eventsWithRegistrations
+    });
+    
+  } catch (error) {
+    console.error('Get analytics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// Download event registrations as CSV
+router.get('/:id/registrations/download', auth, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    
+    // Check if event exists
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+    
+    // Check if user is admin or event coordinator
+    const isAdmin = req.user.role === 'admin';
+    const isCoordinator = event.coordinators && event.coordinators.some(
+      coord => coord.email === req.user.email
+    );
+    
+    if (!isAdmin && !isCoordinator) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this resource'
+      });
+    }
+    
+    // Get all registrations for this event
+    const registrations = await Registration.find({
+      event: eventId,
+      status: { $in: ['registered', 'confirmed', 'attended'] }
+    }).populate('student', 'name email');
+    
+    // Check if there are any registrations
+    if (registrations.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registrations found for this event'
+      });
+    }
+    
+    // Prepare CSV data
+    let csvData = 'Roll Number,Name,Email,Phone,Department,Year,Registration Date\n';
+    
+    registrations.forEach(reg => {
+      const registrationDate = new Date(reg.registrationDate).toISOString().split('T')[0];
+      
+      csvData += `${reg.rollNumber},${reg.studentName},${reg.studentEmail},${reg.studentPhone},${reg.department},${reg.year},${registrationDate}\n`;
+      
+      // Add team members if it's a team registration
+      if (reg.isTeamRegistration && reg.teamMembers && reg.teamMembers.length > 0) {
+        reg.teamMembers.forEach(member => {
+          csvData += `${member.rollNumber},${member.name},${member.email},${member.phone},${member.department},${member.year},${registrationDate} (Team Member)\n`;
+        });
+      }
+    });
+    
+    // Set response headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=registrations_${event.title.replace(/\s+/g, '_')}.csv`);
+    
+    // Send the CSV data
+    res.send(csvData);
+    
+  } catch (error) {
+    console.error('Download registrations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 module.exports = router;

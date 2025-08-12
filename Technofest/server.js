@@ -49,6 +49,10 @@ app.get('/admin-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
 });
 
+app.get('/admin-analytics', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin-analytics.html'));
+});
+
 // API route to get all students (admin only)
 app.get('/api/students', async (req, res) => {
   try {
@@ -172,4 +176,4 @@ app.listen(PORT, () => {
   console.log(`Login page: http://localhost:${PORT}`);
   console.log(`Student Dashboard: http://localhost:${PORT}/user-dashboard`);
   console.log(`Admin Dashboard: http://localhost:${PORT}/admin-dashboard`);
-}); 
+});
