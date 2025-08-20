@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KONGU ENGINEERING COLLEGE - Login</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <img src="IT1.png" alt="KEC Admin Block" class="background-image">
+      <div class="overlay-text">
+        <h1>KONGU ENGINEERING COLLEGE<br>(AUTONOMOUS)</h1>
+      </div>
+    </div>
+
+    <div class="right">
+      <img src="kongu logo2.png" alt="KEC Logo" class="logo">
+      <h2 class="college-name">KONGU ENGINEERING COLLEGE<br><span>Perundurai</span></h2>
+      <p class="estd">Estd : 1984</p>
+
+      <div class="login-container">
+        <!-- Login Type Selector -->
+        <div class="login-type-selector">
+          <button type="button" class="type-btn active" data-type="student">Student Login</button>
+          <button type="button" class="type-btn" data-type="admin">Admin Login</button>
+        </div>
+
+        <!-- Student Login Form -->
+        <form id="studentLoginForm" class="login-form active">
+          <h3>Student Login</h3>
+          <div class="form-group">
+            <label for="studentRollNumber">Roll Number</label>
+            <input type="text" id="studentRollNumber" name="rollNumber" placeholder="e.g., 23ITR001" required>
+          </div>
+          <div class="form-group">
+            <label for="studentPassword">Password</label>
+            <input type="password" id="studentPassword" name="password" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="login-btn">Login</button>
+          <div class="form-info">
+            <p>Default password: <strong>kongu@123</strong></p>
+            <p>Format: YYDDXXX or YYDDDXXX (e.g., 23ITR001)</p>
+          </div>
+        </form>
+
+        <!-- Admin Login Form -->
+        <form id="adminLoginForm" class="login-form">
+          <h3>Admin Login</h3>
+          <div class="form-group">
+            <label for="adminEmail">Email</label>
+            <input type="email" id="adminEmail" name="email" value="admin@kongu.edu" placeholder="admin@kongu.edu" required>
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" name="password" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="login-btn">Login</button>
+          <div class="form-info">
+            <p>Default admin: <strong>admin@kongu.edu</strong></p>
+            <p>Default password: <strong>admin@123</strong></p>
+          </div>
+        </form>
+
+        <!-- Loading and Error Messages -->
+        <div id="loadingMessage" class="message loading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Logging in...</p>
+        </div>
+
+        <div id="errorMessage" class="message error" style="display: none;">
+          <p id="errorText"></p>
+        </div>
+
+        <div id="successMessage" class="message success" style="display: none;">
+          <p id="successText"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
