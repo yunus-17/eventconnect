@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Test Page</h1>
+    <p>This page helps test the API endpoints to debug why events are not showing in the user dashboard.</p>
+
+    <div class="test-section info">
+        <h3>📊 Current Status</h3>
+        <div id="status">Click "Test All APIs" to check the current status</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 Test Controls</h3>
+        <button onclick="testAllAPIs()">Test All APIs</button>
+        <button onclick="testEventsAPI()">Test Events API</button>
+        <button onclick="testUpcomingEvents()">Test Upcoming Events</button>
+        <button onclick="testNotifications()">Test Notifications</button>
+        <button onclick="createTestEvent()">Create Test Event</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Results</h3>
+        <div id="results">Results will appear here...</div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:4007';
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `test-section ${type}`;
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            resultsDiv.appendChild(logEntry);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testAllAPIs() {
+            log('🚀 Starting comprehensive API test...', 'info');
+            
+            // Test 1: Basic events API
+            await testEventsAPI();
+            
+            // Test 2: Upcoming events
+            await testUpcomingEvents();
+            
+            // Test 3: Notifications
+            await testNotifications();
+            
+            log('✅ All API tests completed!', 'success');
+        }
+
+        async function testEventsAPI() {
+            try {
+                log('📡 Testing GET /api/events...', 'info');
+                const response = await fetch(`${API_BASE_URL}/api/events`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Events API Success: Found ${data.events ? data.events.length : 0} total events`, 'success');
+                    
+                    if (data.events && data.events.length > 0) {
+                        log(`📋 First event: ${data.events[0].title}`, 'info');
+                    }
+                } else {
+                    log(`❌ Events API Failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Events API Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUpcomingEvents() {
+            try {
+                log('📡 Testing GET /api/events?status=upcoming...', 'info');
+                const response = await fetch(`${API_BASE_URL}/api/events?status=upcoming&limit=10`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Upcoming Events API Success: Found ${data.events ? data.events.length : 0} upcoming events`, 'success');
+                    
+                    if (data.events && data.events.length > 0) {
+                        data.events.forEach((event, index) => {
+                            log(`📅 Event ${index + 1}: ${event.title} (${new Date(event.startDate).toLocaleDateString()})`, 'info');
+                        });
+                    } else {
+                        log('⚠️ No upcoming events found. This might be why the user dashboard shows "No upcoming events"', 'error');
+                    }
+                } else {
+                    log(`❌ Upcoming Events API Failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Upcoming Events API Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNotifications() {
+            try {
+                log('📡 Testing GET /api/events/notifications/recent...', 'info');
+                const response = await fetch(`${API_BASE_URL}/api/events/notifications/recent`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Notifications API Success: Found ${data.notifications ? data.notifications.length : 0} notifications`, 'success');
+                } else {
+                    log(`❌ Notifications API Failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Notifications API Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestEvent() {
+            try {
+                log('📡 Creating test event...', 'info');
+                
+                const testEvent = {
+                    title: "Test Workshop - " + new Date().toISOString(),
+                    description: "This is a test workshop created from the API test page",
+                    category: "workshop",
+                    domain: "Testing",
+                    posterUrl: "https://example.com/test-poster.jpg",
+                    startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+                    endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days from now
+                    duration: "1 day",
+                    coordinatorName: "Test Coordinator",
+                    coordinatorEmail: "test@example.com",
+                    venue: "Test Venue",
+                    maxParticipants: 50,
+                    registrationDeadline: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString() // 6 days from now
+                };
+
+                const response = await fetch(`${API_BASE_URL}/api/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testEvent)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Test event created successfully: ${data.event.title}`, 'success');
+                    
+                    // Test upcoming events again to see if the new event appears
+                    setTimeout(() => {
+                        testUpcomingEvents();
+                    }, 1000);
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Failed to create test event: ${response.status} ${response.statusText}`, 'error');
+                    log(`Error details: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Create Test Event Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            log('🌐 API Test Page loaded. Click "Test All APIs" to start testing.', 'info');
+        });
+    </script>
+</body>
+</html>

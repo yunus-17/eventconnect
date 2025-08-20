@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventConnect Admin Dashboard</title>
+  <link rel="stylesheet" href="eventconnect-admin.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="kongu logo2.png" alt="KEC Logo" class="sidebar-logo">
+        <h3>EventConnect</h3>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="nav-item active" data-content="dashboard">
+            <a href="#"><i class="nav-icon">🏠</i> Dashboard</a>
+          </li>
+          <li class="nav-item" data-content="workshops">
+            <a href="#"><i class="nav-icon">🔧</i> Workshops</a>
+          </li>
+          <li class="nav-item" data-content="hackathons">
+            <a href="#"><i class="nav-icon">💻</i> Hackathons</a>
+          </li>
+          <li class="nav-item" data-content="tech-symposiums">
+            <a href="#"><i class="nav-icon">🎓</i> Tech Symposiums</a>
+          </li>
+          <li class="nav-item has-submenu">
+            <a href="#"><i class="nav-icon">🏢</i> Department Events</a>
+            <ul class="submenu">
+              <li class="nav-item" data-content="intra-dept-events">
+                <a href="#">Intra-Department Events</a>
+              </li>
+              <li class="nav-item" data-content="inter-dept-events">
+                <a href="#">Inter-Department Events</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item" data-content="guest-lectures">
+            <a href="#"><i class="nav-icon">👨‍🏫</i> Guest Lectures</a>
+          </li>
+          <li class="nav-item">
+            <a href="admin-analytics.html"><i class="nav-icon">📊</i> Analytics</a>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">
+          <i class="nav-icon">🚪</i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="menu-toggle" id="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <h1>EventConnect Admin Dashboard</h1>
+        <div class="user-info">
+          <span>Welcome, <span id="adminName">Admin</span></span>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Dashboard Content (default) -->
+        <div class="content-section active" id="dashboard-content">
+          <div class="welcome-banner">
+            <h2>Welcome to EventConnect Admin Dashboard</h2>
+            <p>Manage all your college events from one place</p>
+          </div>
+          
+          <div class="stats-container">
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-info">
+                <h3>Total Events</h3>
+                <p class="stat-number">24</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-info">
+                <h3>Total Registrations</h3>
+                <p class="stat-number">342</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">🔄</div>
+              <div class="stat-info">
+                <h3>Ongoing Events</h3>
+                <p class="stat-number">5</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <h3>Upcoming Events</h3>
+                <p class="stat-number">8</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="recent-activity">
+            <h3>Recent Activity</h3>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon">🆕</div>
+                <div class="activity-details">
+                  <p>New registration for <strong>Web Development Workshop</strong></p>
+                  <span class="activity-time">2 hours ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">✏️</div>
+                <div class="activity-details">
+                  <p>Updated details for <strong>AI Hackathon</strong></p>
+                  <span class="activity-time">Yesterday</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">🗓️</div>
+                <div class="activity-details">
+                  <p>New event created: <strong>IoT Workshop</strong></p>
+                  <span class="activity-time">2 days ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Workshops Content -->
+        <div class="content-section" id="workshops-content">
+          <h2>Manage Workshops</h2>
+          
+          <div class="action-bar">
+            <button id="addWorkshopBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Workshop
+            </button>
+          </div>
+          
+          <!-- Workshop Form (initially hidden) -->
+          <div id="workshopFormContainer" class="form-container" style="display: none;">
+            <form id="workshopForm" class="admin-form">
+              <h3>Add New Workshop</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="workshopTitle">Title</label>
+                  <input type="text" id="workshopTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopDomain">Domain</label>
+                  <input type="text" id="workshopDomain" name="domain" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopOrganizer">Organizer / Coordinator</label>
+                  <input type="text" id="workshopOrganizer" name="organizer" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopOrganizerEmail">Organizer Email</label>
+                  <input type="email" id="workshopOrganizerEmail" name="organizerEmail" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopOrganizerPhone">Organizer Phone</label>
+                  <input type="tel" id="workshopOrganizerPhone" name="organizerPhone" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopVenue">Venue</label>
+                  <input type="text" id="workshopVenue" name="venue" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopDuration">Duration (days)</label>
+                  <input type="number" id="workshopDuration" name="duration" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopStartDate">Start Date</label>
+                  <input type="date" id="workshopStartDate" name="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopEndDate">End Date</label>
+                  <input type="date" id="workshopEndDate" name="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopDeadline">Registration Deadline</label>
+                  <input type="date" id="workshopDeadline" name="deadline" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopPosterLink">Poster Link (URL)</label>
+                  <input type="url" id="workshopPosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopEventLink">Event Link / Website Link</label>
+                  <input type="url" id="workshopEventLink" name="eventLink" placeholder="https://example.com/event-registration">
+                </div>
+                
+                <div class="form-group">
+                  <label for="workshopMaxTeamMembers">Max Team Members</label>
+                  <input type="number" id="workshopMaxTeamMembers" name="maxTeamMembers" min="1" required>
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="workshopDescription">Description</label>
+                <textarea id="workshopDescription" name="description" rows="4" required></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="workshopPrerequisites">Prerequisites</label>
+                <textarea id="workshopPrerequisites" name="prerequisites" rows="2"></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="workshopPrizes">Prizes (if any)</label>
+                <textarea id="workshopPrizes" name="prizes" rows="2"></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="workshopRules">Rules</label>
+                <textarea id="workshopRules" name="rules" rows="2"></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label>Tags/Options</label>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="openForAll" name="openForAll">
+                    <label for="openForAll">Open for all</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="certificatesProvided" name="certificatesProvided">
+                    <label for="certificatesProvided">Certificates provided</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="requiresLaptop" name="requiresLaptop">
+                    <label for="requiresLaptop">Requires laptop</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="externalEntriesAllowed" name="externalEntriesAllowed">
+                    <label for="externalEntriesAllowed">External entries allowed</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="workshopIntraDept" name="intraDept">
+                    <label for="workshopIntraDept">Intra-Department</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="workshopInterDept" name="interDept" checked>
+                    <label for="workshopInterDept">Inter-Department</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="workshopOnline" name="online">
+                    <label for="workshopOnline">Online</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="workshopOffline" name="offline" checked>
+                    <label for="workshopOffline">Offline</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelWorkshopBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Workshops Display -->
+          <div id="workshopsContainer" class="cards-container">
+            <p class="empty-state">No workshops added yet. Click "Add Workshop" to create one.</p>
+          </div>
+        </div>
+        
+        <!-- Hackathons Content -->
+        <div class="content-section" id="hackathons-content">
+          <h2>Manage Hackathons</h2>
+          
+          <div class="action-bar">
+            <button id="addHackathonBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Hackathon
+            </button>
+          </div>
+          
+          <!-- Hackathon Form (initially hidden) -->
+          <div id="hackathonFormContainer" class="form-container" style="display: none;">
+            <form id="hackathonForm" class="admin-form">
+              <h3>Add New Hackathon</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="hackathonTitle">Hackathon Title</label>
+                  <input type="text" id="hackathonTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonDomainCount">How many Domains?</label>
+                  <input type="number" id="hackathonDomainCount" name="domainCount" min="1" value="1" required>
+                </div>
+                
+                <!-- Dynamic domains container -->
+                <div class="form-group full-width">
+                  <div id="domainsContainer" class="domains-container">
+                    <!-- Domain blocks will be generated here -->
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonMode">Mode</label>
+                  <select id="hackathonMode" name="mode" required>
+                    <option value="">Select Mode</option>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonTeamSize">Max Team Size</label>
+                  <input type="number" id="hackathonTeamSize" name="maxTeamSize" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonDeadline">Registration Deadline</label>
+                  <input type="date" id="hackathonDeadline" name="deadline" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonStartDate">Hackathon Start Date</label>
+                  <input type="date" id="hackathonStartDate" name="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonEndDate">Hackathon End Date</label>
+                  <input type="date" id="hackathonEndDate" name="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonJudgingPanel">Judging Panel / Company</label>
+                  <input type="text" id="hackathonJudgingPanel" name="judgingPanel">
+                </div>
+                
+                <div class="form-group">
+                  <label for="hackathonPosterLink">Poster / Banner URL</label>
+                  <input type="url" id="hackathonPosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="hackathonProblemStatement">Problem Statement</label>
+                <textarea id="hackathonProblemStatement" name="problemStatement" rows="4" required></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="hackathonSubmissionRequirements">Submission Requirements</label>
+                <textarea id="hackathonSubmissionRequirements" name="submissionRequirements" rows="3" placeholder="GitHub link, Video, etc." required></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label>Special Tags</label>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="externalParticipants" name="externalParticipants">
+                    <label for="externalParticipants">External Participants</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="certificateProvided" name="certificateProvided">
+                    <label for="certificateProvided">Certificate Provided</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="requiresLaptop" name="requiresLaptop">
+                    <label for="requiresLaptop">Requires Laptop</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelHackathonBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Hackathons Display -->
+          <div id="hackathonsContainer" class="cards-container">
+            <p class="empty-state">No hackathons added yet. Click "Add Hackathon" to create one.</p>
+          </div>
+        </div>
+        
+        <!-- Tech Symposiums Content -->
+        <div class="content-section" id="tech-symposiums-content">
+          <h2>Manage Tech Symposiums</h2>
+          
+          <div class="action-bar">
+            <button id="addTechSymposiumBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Tech Symposium
+            </button>
+          </div>
+          
+          <!-- Tech Symposium Form (initially hidden) -->
+          <div id="techSymposiumFormContainer" class="form-container" style="display: none;">
+            <form id="techSymposiumForm" class="admin-form">
+              <h3>Add New Tech Symposium</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="symposiumTitle">Symposium Title</label>
+                  <input type="text" id="symposiumTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumDomain">Domain</label>
+                  <input type="text" id="symposiumDomain" name="domain" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumSubCategory">Sub Category</label>
+                  <select id="symposiumSubCategory" name="subCategory" required>
+                    <option value="">Select Sub Category</option>
+                    <option value="technical">Technical</option>
+                    <option value="non-technical">Non-Technical</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumCoordinator">Coordinator</label>
+                  <input type="text" id="symposiumCoordinator" name="coordinator" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumStartDate">Start Date</label>
+                  <input type="date" id="symposiumStartDate" name="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumEndDate">End Date</label>
+                  <input type="date" id="symposiumEndDate" name="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumDeadline">Registration Deadline</label>
+                  <input type="date" id="symposiumDeadline" name="deadline" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumPosterLink">Poster Link (URL)</label>
+                  <input type="url" id="symposiumPosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumVenue">Venue</label>
+                  <input type="text" id="symposiumVenue" name="venue" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumMaxParticipants">Max Participants</label>
+                  <input type="number" id="symposiumMaxParticipants" name="maxParticipants" min="1" required>
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="symposiumDescription">Description</label>
+                <textarea id="symposiumDescription" name="description" rows="4" required></textarea>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelTechSymposiumBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Tech Symposiums Display -->
+          <div id="techSymposiumsContainer" class="cards-container">
+            <p class="empty-state">No tech symposiums added yet. Click "Add Tech Symposium" to create one.</p>
+          </div>
+        </div>
+        
+        <!-- Intra-Department Events Content -->
+        <div class="content-section" id="intra-dept-events-content">
+          <h2>Intra-Department Events Management</h2>
+          <!-- Main Event Name Input -->
+       
+
+          
+          <div class="action-bar">
+            <button id="addIntraDeptEventBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Intra-Department Events
+            </button>
+          </div>
+          
+          <!-- Intra-Department Events Form (initially hidden) -->
+          <div id="intraDeptEventFormContainer" class="form-container" style="display: none;">
+            <form id="intraDeptEventForm" class="admin-form">
+              <h3>Add Intra-Department Events</h3>
+              
+              <div class="main-event-container">
+                <label for="mainEventName">Main Event Name:</label>
+                <input 
+                type="text" 
+                id="mainEventName" 
+                name="mainEventName" 
+                placeholder="e.g., SIGN IN, VIVERE, INNOVATE" 
+                required>
+              </div>
+              
+              <div class="form-group">
+                <label for="mainEventGoogleForm">Main Event Google Form Link:</label>
+                <input 
+                type="url" 
+                id="mainEventGoogleForm" 
+                name="mainEventGoogleForm" 
+                placeholder="https://forms.google.com/..." 
+                required>
+              </div>
+        
+              <!-- Event Category Selection -->
+              <div class="form-group">
+                <label>Event Category</label>
+                <div class="radio-group">
+                  <div class="radio-item">
+                    <input type="radio" id="technicalEvents" name="eventCategory" value="technical" checked>
+                    <label for="technicalEvents">Technical Events</label>
+                  </div>
+                  <div class="radio-item">
+                    <input type="radio" id="nonTechnicalEvents" name="eventCategory" value="non-technical">
+                    <label for="nonTechnicalEvents">Non-Technical Events</label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Number of Events Input -->
+              <div class="form-group">
+                <label for="eventCount">How many events do you want to add?</label>
+                <input type="number" id="eventCount" name="eventCount" min="1" max="10" value="1" required>
+              </div>
+              
+              <!-- Dynamic Event Forms Container -->
+              <div id="eventFormsContainer">
+                <!-- Event forms will be dynamically generated here -->
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelIntraDeptEventBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit All Events</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Intra-Department Events Display -->
+          <div id="intraDeptEventsContainer" class="cards-container">
+            <div id="technicalEventsSection" class="events-section">
+              <h3 class="section-title">Technical Events</h3>
+              <div id="technicalEventsContainer" class="events-list">
+                <p class="empty-state">No technical events added yet.</p>
+              </div>
+            </div>
+            
+            <div id="nonTechnicalEventsSection" class="events-section">
+              <h3 class="section-title">Non-Technical Events</h3>
+              <div id="nonTechnicalEventsContainer" class="events-list">
+                <p class="empty-state">No non-technical events added yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Inter-Department Events Content -->
+        <div class="content-section" id="inter-dept-events-content">
+          <h2>Inter-Department Events Management</h2>
+        
+          
+          <div class="action-bar">
+            <button id="addInterDeptEventBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Inter-Department Events
+            </button>
+          </div>
+          
+          <!-- Inter-Department Events Form (initially hidden) -->
+          <div id="interDeptEventFormContainer" class="form-container" style="display: none;">
+            <form id="interDeptEventForm" class="admin-form">
+              <h3>Add Inter-Department Events</h3>
+              <div class="main-event-container">
+                <label for="mainEventName">Main Event Name:</label>
+                <input 
+                type="text" 
+                id="mainEventName" 
+                name="mainEventName" 
+                placeholder="e.g., SIGN IN, VIVERE, INNOVATE" 
+                required>
+              </div>
+              
+              <div class="form-group">
+                <label for="interMainEventGoogleForm">Main Event Google Form Link:</label>
+                <input 
+                type="url" 
+                id="interMainEventGoogleForm" 
+                name="interMainEventGoogleForm" 
+                placeholder="https://forms.google.com/..." 
+                required>
+              </div>
+        
+              
+              <!-- Number of Events Input -->
+              <div class="form-group">
+                <label for="interEventCount">How many events do you want to add?</label>
+                <input type="number" id="interEventCount" name="interEventCount" min="1" max="10" value="1" required>
+              </div>
+              
+              <!-- Dynamic Event Forms Container -->
+              <div id="interEventFormsContainer">
+                <!-- Event forms will be dynamically generated here -->
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelInterDeptEventBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit All Events</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Inter-Department Events Display -->
+          <div id="interDeptEventsContainer" class="cards-container">
+            <p class="empty-state">No inter-department events added yet.</p>
+          </div>
+        </div>
+        
+        <!-- Guest Lectures Content -->
+        <div class="content-section" id="guest-lectures-content">
+          <h2>Manage Guest Lectures</h2>
+          
+          <div class="action-bar">
+            <button id="addGuestLectureBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Guest Lecture
+            </button>
+          </div>
+          
+          <!-- Guest Lecture Form (initially hidden) -->
+          <div id="guestLectureFormContainer" class="form-container" style="display: none;">
+            <form id="guestLectureForm" class="admin-form">
+              <h3>Add New Guest Lecture</h3>
+              
+              <!-- Basic Information Section -->
+              <div class="form-section">
+                <h4 class="section-title">Basic Information</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="lectureTitle">Lecture Title</label>
+                    <input type="text" id="lectureTitle" name="title" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="speakerName">Speaker Name</label>
+                    <input type="text" id="speakerName" name="speakerName" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="speakerDesignation">Speaker Designation & Organization</label>
+                    <input type="text" id="speakerDesignation" name="speakerDesignation" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lectureTopic">Lecture Topic / Theme</label>
+                    <input type="text" id="lectureTopic" name="lectureTopic" required>
+                  </div>
+                  
+                  <div class="form-group full-width">
+                    <label for="lectureDescription">Description / Abstract</label>
+                    <textarea id="lectureDescription" name="description" rows="4" required></textarea>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lecturePosterLink">Poster / Banner URL</label>
+                    <input type="url" id="lecturePosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Logistics Section -->
+              <div class="form-section">
+                <h4 class="section-title">Logistics</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="lectureDate">Date of Lecture</label>
+                    <input type="date" id="lectureDate" name="lectureDate" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lectureStartTime">Start Time</label>
+                    <input type="time" id="lectureStartTime" name="startTime" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lectureEndTime">End Time</label>
+                    <input type="time" id="lectureEndTime" name="endTime" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lectureVenue">Venue / Platform</label>
+                    <input type="text" id="lectureVenue" name="venue" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lectureMode">Mode</label>
+                    <select id="lectureMode" name="mode" required>
+                      <option value="">Select Mode</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Online">Online</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Audience Selection Section -->
+              <div class="form-section">
+                <h4 class="section-title">Audience Selection</h4>
+                <div class="form-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="mandatoryForAll" name="mandatoryForAll">
+                    <label for="mandatoryForAll">Mandatory for All Students</label>
+                  </div>
+                </div>
+                
+                <div id="yearSelectionContainer" class="form-group">
+                  <label>Select Year Groups (if not mandatory for all)</label>
+                  <div class="checkbox-group">
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="secondYear" name="secondYear">
+                      <label for="secondYear">2nd Year Students</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="thirdYear" name="thirdYear">
+                      <label for="thirdYear">3rd Year Students</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="fourthYear" name="fourthYear">
+                      <label for="fourthYear">4th Year Students</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="finalYear" name="finalYear">
+                      <label for="finalYear">Final Year Students</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Registration Details Section -->
+              <div class="form-section">
+                <h4 class="section-title">Registration Details</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="registrationDeadline">Registration Deadline</label>
+                    <input type="date" id="registrationDeadline" name="registrationDeadline">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="maxParticipants">Max Participants</label>
+                    <input type="number" id="maxParticipants" name="maxParticipants" min="1">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="certificateProvided" name="certificateProvided">
+                    <label for="certificateProvided">Certificate Provided</label>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Special Requirements</label>
+                  <div class="checkbox-group">
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="bringLaptop" name="bringLaptop">
+                      <label for="bringLaptop">Bring Laptop</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="preReadMaterial" name="preReadMaterial">
+                      <label for="preReadMaterial">Pre-read Material</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Coordinator Info Section -->
+              <div class="form-section">
+                <h4 class="section-title">Coordinator Info</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="coordinatorName">Coordinator Name</label>
+                    <input type="text" id="coordinatorName" name="coordinatorName" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="coordinatorContact">Coordinator Contact</label>
+                    <input type="text" id="coordinatorContact" name="coordinatorContact" pattern="[0-9]{10}" placeholder="10-digit phone number" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelGuestLectureBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Guest Lectures Display -->
+          <div id="guestLecturesContainer" class="cards-container">
+            <p class="empty-state">No guest lectures added yet. Click "Add Guest Lecture" to create one.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="eventconnect-admin.js"></script>
+</body>
+</html>

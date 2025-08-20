@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - KONGU ENGINEERING COLLEGE</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <img src="kongu logo2.png" alt="KEC Logo" class="header-logo">
+        <div class="header-text">
+          <h1>Student Dashboard</h1>
+          <p>Kongu Engineering College</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="welcome-text">Welcome, <span id="profileName">Student</span></span>
+        <div class="profile-menu">
+          <button id="profileBtn" class="profile-btn" aria-haspopup="true" aria-expanded="false">
+            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </button>
+          <div id="profileDropdown" class="profile-dropdown" role="menu" aria-hidden="true">
+            <button class="dropdown-item" id="openQuickActions">Quick Actions</button>
+            <button class="dropdown-item" id="openRecentActivity">Recent Activity</button>
+            <button class="dropdown-item" id="openAcademicStatus">Academic Status</button>
+          </div>
+        </div>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="dashboard-grid">
+        <!-- Student Information Card -->
+        <div class="dashboard-card">
+          <h2>Student Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Roll Number:</label>
+              <span id="rollNumber">-</span>
+            </div>
+            <div class="info-item">
+              <label>Name:</label>
+              <span id="studentFullName">-</span>
+            </div>
+            <div class="info-item">
+              <label>Department:</label>
+              <span id="department">-</span>
+            </div>
+            <div class="info-item">
+              <label>Year:</label>
+              <span id="year">-</span>
+            </div>
+            <div class="info-item">
+              <label>CGPA:</label>
+              <span id="cgpa">-</span>
+            </div>
+            <div class="info-item">
+              <label>Account Created:</label>
+              <span id="createdAt">-</span>
+            </div>
+            <div class="info-item">
+              <label>Last Login:</label>
+              <span id="lastLogin">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>Upcoming Events</h2>
+            <div class="header-actions">
+              <button id="refreshUpcomingBtn" class="btn-secondary">Refresh</button>
+              <button id="loadMoreEventsBtn" class="btn-primary" style="display: none;">Load More Events</button>
+            </div>
+          </div>
+          <div id="upcomingEventsContainer" class="events-grid" aria-live="polite"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Password Change Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Change Password</h2>
+        <button class="close-btn" onclick="closePasswordModal()">&times;</button>
+      </div>
+      <form id="passwordChangeForm">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="newPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Change Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Actions Modal -->
+  <div id="quickActionsModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Quick Actions</h2>
+        <button class="close-btn" onclick="closeQuickActionsModal()">&times;</button>
+      </div>
+      <div class="action-buttons" style="padding: 1rem;">
+        <button class="action-btn" onclick="showPasswordChangeModal()">
+          <span class="action-icon">🔒</span>
+          Change Password
+        </button>
+        <button class="action-btn" onclick="viewProfile()">
+          <span class="action-icon">👤</span>
+          View Profile
+        </button>
+        <button class="action-btn" onclick="viewNotifications()">
+          <span class="action-icon">🔔</span>
+          Notifications
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Modal -->
+  <div id="recentActivityModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Recent Activity</h2>
+        <button class="close-btn" onclick="closeRecentActivityModal()">&times;</button>
+      </div>
+      <div class="activity-list" style="padding: 1rem;">
+        <div class="activity-item">
+          <div class="activity-icon">✅</div>
+          <div class="activity-content">
+            <p>Successfully logged in</p>
+            <small id="loginTime">Just now</small>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">🏆</div>
+          <div class="activity-content">
+            <p>No. of events registered: <span id="eventsParticipated">0</span></p>
+            <small>Updated just now</small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic Status Modal -->
+  <div id="academicStatusModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Academic Status</h2>
+        <button class="close-btn" onclick="closeAcademicStatusModal()">&times;</button>
+      </div>
+      <div class="status-grid" style="padding: 1rem;">
+        <div class="status-item">
+          <div class="status-number" id="attendancePercentage">85%</div>
+          <div class="status-label">Attendance</div>
+        </div>
+        <div class="status-item">
+          <div class="status-number" id="academicCgpa">8.5</div>
+          <div class="status-label">CGPA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notificationsModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Upcoming Events</h2>
+        <button class="close-btn" onclick="closeNotificationsModal()">&times;</button>
+      </div>
+      <div class="notifications-content" style="padding: 1rem;">
+        <div class="notifications-header">
+          <p>Stay updated with the latest events and activities</p>
+          <button id="refreshNotificationsBtn" class="btn-secondary" onclick="refreshNotifications()">
+            <span>🔄</span> Refresh
+          </button>
+        </div>
+        <div id="notificationsEventsContainer" class="notifications-events-grid">
+          <!-- Events will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Student Profile</h2>
+        <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+      </div>
+      <div class="profile-content" style="padding: 1rem;">
+        <div class="profile-section">
+          <h3>Personal Information</h3>
+          <div class="profile-grid">
+            <div class="profile-item">
+              <label>Roll Number:</label>
+              <span id="profileRollNumber">-</span>
+            </div>
+            <div class="profile-item">
+              <label>Name:</label>
+              <span id="profileModalName">-</span>
+            </div>
+            <div class="profile-item">
+              <label>Department:</label>
+              <span id="profileDepartment">-</span>
+            </div>
+            <div class="profile-item">
+              <label>Year:</label>
+              <span id="profileYear">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-section">
+          <h3>Academic Information</h3>
+          <div class="profile-grid">
+            <div class="profile-item">
+              <label>CGPA:</label>
+              <span id="profileCgpa">-</span>
+            </div>
+            <div class="profile-item">
+              <label>Attendance:</label>
+              <span id="profileAttendance">85%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-actions">
+          <button class="btn-secondary" onclick="closeProfileModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <script src="user-dashboard.js"></script>
+</body>
+</html> 

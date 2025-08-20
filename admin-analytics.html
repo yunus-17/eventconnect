@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventConnect Analytics Dashboard</title>
+  <link rel="stylesheet" href="eventconnect-admin.css">
+  <style>
+    /* Analytics-specific styles */
+    .analytics-container {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e1e5e9;
+      margin-bottom: 2rem;
+    }
+    
+    .analytics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 0.5rem;
+    }
+    
+    .analytics-header h2 {
+      font-size: 1.2rem;
+      color: #003366;
+      margin: 0;
+    }
+    
+    .analytics-filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .analytics-filter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .analytics-filter label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #666;
+    }
+    
+    .analytics-filter select {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 2rem;
+    }
+    
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    .analytics-table th,
+    .analytics-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .analytics-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+      position: sticky;
+      top: 0;
+    }
+    
+    .analytics-table tbody tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .chart-container {
+      height: 400px;
+      margin-top: 2rem;
+    }
+    
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #003366;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .refresh-btn:hover {
+      background: #002244;
+    }
+    
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-box {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e1e5e9;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #003366;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    /* Download button styles */
+    .download-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background-color 0.3s ease;
+    }
+    
+    .download-btn:hover {
+      background-color: #45a049;
+    }
+    
+    .download-btn.disabled {
+      background-color: #cccccc;
+      color: #666666;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="kongu logo2.png" alt="KEC Logo" class="sidebar-logo">
+        <h3>EventConnect</h3>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="nav-item" data-content="dashboard">
+            <a href="eventconnect-admin.html"><i class="nav-icon">🏠</i> Dashboard</a>
+          </li>
+          <li class="nav-item" data-content="workshops">
+            <a href="eventconnect-admin.html#workshops"><i class="nav-icon">🔧</i> Workshops</a>
+          </li>
+          <li class="nav-item" data-content="hackathons">
+            <a href="eventconnect-admin.html#hackathons"><i class="nav-icon">💻</i> Hackathons</a>
+          </li>
+          <li class="nav-item" data-content="tech-symposiums">
+            <a href="eventconnect-admin.html#tech-symposiums"><i class="nav-icon">🎓</i> Tech Symposiums</a>
+          </li>
+          <li class="nav-item has-submenu">
+            <a href="#"><i class="nav-icon">🏢</i> Department Events</a>
+            <ul class="submenu">
+              <li class="nav-item" data-content="intra-dept-events">
+                <a href="eventconnect-admin.html#intra-dept-events">Intra-Department Events</a>
+              </li>
+              <li class="nav-item" data-content="inter-dept-events">
+                <a href="eventconnect-admin.html#inter-dept-events">Inter-Department Events</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item" data-content="guest-lectures">
+            <a href="eventconnect-admin.html#guest-lectures"><i class="nav-icon">👨‍🏫</i> Guest Lectures</a>
+          </li>
+          <li class="nav-item active" data-content="analytics">
+            <a href="admin-analytics.html"><i class="nav-icon">📊</i> Analytics</a>
+          </li>
+          <li class="nav-item">
+            <a href="eventconnect-admin.html"><i class="nav-icon">🏠</i> Back to Dashboard</a>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">
+          <i class="nav-icon">🚪</i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="menu-toggle" id="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <h1>EventConnect Analytics Dashboard</h1>
+        <div class="user-info">
+          <span>Welcome, <span id="adminName">Admin</span></span>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Analytics Content -->
+        <div class="content-section active" id="analytics-content">
+          <div class="welcome-banner">
+            <h2>Event Registration Analytics</h2>
+            <p>Track and analyze event participation across all categories</p>
+          </div>
+          
+          <!-- Stats Overview -->
+          <div class="stat-row">
+            <div class="stat-box">
+              <div class="stat-value" id="totalEvents">0</div>
+              <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="totalRegistrations">0</div>
+              <div class="stat-label">Total Registrations</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="avgRegistrationsPerEvent">0</div>
+              <div class="stat-label">Avg. Registrations/Event</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="mostPopularCategory">-</div>
+              <div class="stat-label">Most Popular Category</div>
+            </div>
+          </div>
+          
+          <!-- Events Table -->
+          <div class="analytics-container">
+            <div class="analytics-header">
+              <h2>Event Registration Data</h2>
+              <button id="refreshDataBtn" class="refresh-btn">
+                <span>🔄</span> Refresh Data
+              </button>
+            </div>
+            
+            <div class="analytics-filters">
+              <div class="analytics-filter">
+                <label for="categoryFilter">Category:</label>
+                <select id="categoryFilter">
+                  <option value="all">All Categories</option>
+                  <option value="workshop">Workshops</option>
+                  <option value="hackathon">Hackathons</option>
+                  <option value="tech-symposium">Tech Symposiums</option>
+                  <option value="guest-lecture">Guest Lectures</option>
+                </select>
+              </div>
+              <div class="analytics-filter">
+                <label for="dateFilter">Date Range:</label>
+                <select id="dateFilter">
+                  <option value="all">All Time</option>
+                  <option value="this-month">This Month</option>
+                  <option value="last-month">Last Month</option>
+                  <option value="this-year">This Year</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table class="analytics-table" id="eventsTable">
+                <thead>
+                  <tr>
+                    <th>Event Name</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Total Registrations</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="eventsTableBody">
+                  <!-- Table rows will be populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Chart -->
+          <div class="analytics-container">
+            <div class="analytics-header">
+              <h2>Registration Distribution by Category</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="registrationChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Admin Analytics JavaScript -->
+  <script src="admin-analytics.js"></script>
+</body>
+</html>
