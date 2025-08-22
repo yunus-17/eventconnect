@@ -1,7 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { User, Student, Admin } = require('../models/User');
+const { User, Student: UserStudent, Admin } = require('../models/User');
+const AcademicStudent = require('../models/Student');
 const { auth, requireAdmin, requireStudent } = require('../middleware/auth');
 
 const router = express.Router();
@@ -33,7 +34,7 @@ router.post('/student-login', [
     const { rollNumber, password } = req.body;
 
     // Find student by roll number
-    const student = await Student.findOne({ rollNumber });
+    const student = await UserStudent.findOne({ rollNumber });
     if (!student) {
       return res.status(401).json({
         success: false,
@@ -50,6 +51,14 @@ router.post('/student-login', [
       });
     }
 
+    // Fetch academic data (CGPA) from AcademicStudent model
+    let academicData = null;
+    try {
+      academicData = await AcademicStudent.findOne({ rollNumber });
+    } catch (error) {
+      console.log('No academic data found for student:', rollNumber);
+    }
+
     // Update last login
     student.lastLogin = new Date();
     await student.save();
@@ -61,6 +70,8 @@ router.post('/student-login', [
       success: true,
       message: 'Student login successful',
       token,
+      rollNumber: student.rollNumber,
+      cgpa: academicData ? academicData.cgpa : null,
       user: {
         id: student._id,
         rollNumber: student.rollNumber,
@@ -141,7 +152,7 @@ router.post('/admin-login', [
         role: admin.role,
         isFirstLogin: admin.isFirstLogin
       },
-      redirectTo: '/admin-dashboard'
+      redirectTo: '/eventconnect-admin.html'
     });
 
   } catch (error) {

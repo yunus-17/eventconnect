@@ -17,9 +17,7 @@ const eventSchema = new mongoose.Schema({
   },
   subCategory: {
     type: String,
-    required: function() {
-      return this.category === 'tech-symposium';
-    },
+    required: false,
     enum: ['technical', 'non-technical']
   },
   domain: {
@@ -56,6 +54,10 @@ const eventSchema = new mongoose.Schema({
   venue: {
     type: String,
     required: true
+  },
+  formLink: {
+    type: String,
+    required: false
   },
   maxParticipants: {
     type: Number,
@@ -129,6 +131,11 @@ const eventSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  // Additional fields for storing category-specific data
+  additionalFields: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   }
 });
 

@@ -2,6 +2,14 @@
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', () => {
+  // Check authentication first
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Authentication required. Please log in to access the analytics dashboard.');
+    window.location.href = 'login.html';
+    return;
+  }
+  
   // Navigation elements
   const menuToggle = document.getElementById('menu-toggle');
   const sidebar = document.querySelector('.sidebar');

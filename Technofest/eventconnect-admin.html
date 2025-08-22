@@ -199,6 +199,11 @@
                 </div>
                 
                 <div class="form-group">
+                  <label for="workshopFormLink">Form Link (Google Form URL)</label>
+                  <input type="url" id="workshopFormLink" name="formLink" placeholder="https://forms.google.com/...">
+                </div>
+                
+                <div class="form-group">
                   <label for="workshopMaxTeamMembers">Max Team Members</label>
                   <input type="number" id="workshopMaxTeamMembers" name="maxTeamMembers" min="1" required>
                 </div>
@@ -319,6 +324,11 @@
                   <label for="hackathonPosterLink">Poster / Banner URL</label>
                   <input type="url" id="hackathonPosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
                 </div>
+                
+                <div class="form-group">
+                  <label for="hackathonFormLink">Form Link (Google Form URL)</label>
+                  <input type="url" id="hackathonFormLink" name="formLink" placeholder="https://forms.google.com/...">
+                </div>
               </div>
               
               <div class="form-group full-width">
@@ -368,7 +378,181 @@
         <div class="content-section" id="tech-symposiums-content">
           <h2>Tech Symposiums Management</h2>
           <p>Manage all tech symposiums from this section.</p>
-          <!-- Content will be dynamically loaded -->
+          
+          <div class="action-bar">
+            <button id="addTechSymposiumBtn" class="action-button">
+              <i class="action-icon">➕</i> Add Tech Symposium
+            </button>
+          </div>
+          
+          <!-- Tech Symposium Form (initially hidden) -->
+          <div id="techSymposiumFormContainer" class="form-container" style="display: none;">
+            <form id="techSymposiumForm" class="admin-form">
+              <h3>Add New Tech Symposium</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="symposiumTitle">Symposium Title</label>
+                  <input type="text" id="symposiumTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumTheme">Theme / Topic</label>
+                  <input type="text" id="symposiumTheme" name="theme" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumOrganizer">Organizer / Coordinator</label>
+                  <input type="text" id="symposiumOrganizer" name="organizer" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumDepartment">Department</label>
+                  <select id="symposiumDepartment" name="department" required>
+                    <option value="">Select Department</option>
+                    <option value="CSE">Computer Science and Engineering</option>
+                    <option value="IT">Information Technology</option>
+                    <option value="ECE">Electronics and Communication Engineering</option>
+                    <option value="EEE">Electrical and Electronics Engineering</option>
+                    <option value="MECH">Mechanical Engineering</option>
+                    <option value="CIVIL">Civil Engineering</option>
+                    <option value="CHEM">Chemical Engineering</option>
+                    <option value="BIOTECH">Biotechnology</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumStartDate">Start Date</label>
+                  <input type="date" id="symposiumStartDate" name="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumEndDate">End Date</label>
+                  <input type="date" id="symposiumEndDate" name="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumRegistrationDeadline">Registration Deadline</label>
+                  <input type="date" id="symposiumRegistrationDeadline" name="registrationDeadline" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumVenue">Venue</label>
+                  <input type="text" id="symposiumVenue" name="venue" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumMode">Mode</label>
+                  <select id="symposiumMode" name="mode" required>
+                    <option value="">Select Mode</option>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumMaxParticipants">Max Participants</label>
+                  <input type="number" id="symposiumMaxParticipants" name="maxParticipants" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="symposiumPosterLink">Poster Link (URL)</label>
+                  <input type="url" id="symposiumPosterLink" name="posterLink" placeholder="https://example.com/poster.jpg">
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="symposiumDescription">Description</label>
+                <textarea id="symposiumDescription" name="description" rows="4" required></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="symposiumKeynoteSpeakers">Keynote Speakers (optional)</label>
+                <textarea id="symposiumKeynoteSpeakers" name="keynoteSpeakers" rows="2" placeholder="List of keynote speakers and their affiliations"></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label for="symposiumSchedule">Schedule (optional)</label>
+                <textarea id="symposiumSchedule" name="schedule" rows="3" placeholder="Detailed schedule of events, sessions, and timings"></textarea>
+              </div>
+              
+              <div class="form-group full-width">
+                <label>Special Features</label>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="paperPresentation" name="paperPresentation">
+                    <label for="paperPresentation">Paper Presentation</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="projectExhibition" name="projectExhibition">
+                    <label for="projectExhibition">Project Exhibition</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="technicalQuiz" name="technicalQuiz">
+                    <label for="technicalQuiz">Technical Quiz</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="posterPresentation" name="posterPresentation">
+                    <label for="posterPresentation">Poster Presentation</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="certificatesProvided" name="certificatesProvided">
+                    <label for="certificatesProvided">Certificates Provided</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="externalParticipants" name="externalParticipants">
+                    <label for="externalParticipants">External Participants Allowed</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="requiresLaptop" name="requiresLaptop">
+                    <label for="requiresLaptop">Requires Laptop</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group full-width">
+                <label>Eligibility</label>
+                <div class="checkbox-group">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="secondYear" name="secondYear">
+                    <label for="secondYear">2nd Year Students</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="thirdYear" name="thirdYear">
+                    <label for="thirdYear">3rd Year Students</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="fourthYear" name="fourthYear">
+                    <label for="fourthYear">4th Year Students</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="finalYear" name="finalYear">
+                    <label for="finalYear">Final Year Students</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="cancelTechSymposiumBtn" class="cancel-button">Cancel</button>
+                <button type="submit" class="submit-button">Submit</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Tech Symposiums Display -->
+          <div id="techSymposiumsContainer" class="cards-container">
+            <p class="empty-state">No tech symposiums added yet. Click "Add Tech Symposium" to create one.</p>
+          </div>
         </div>
         
         <!-- Intra-Department Events Content -->

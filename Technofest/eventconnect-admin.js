@@ -996,11 +996,15 @@ document.addEventListener('DOMContentLoaded', () => {
   navItems.forEach(item => {
     if (!item.classList.contains('has-submenu')) {
       item.addEventListener('click', function(e) {
-        e.preventDefault();
-        
         // Get content ID from data attribute
         const contentId = this.getAttribute('data-content');
-        if (!contentId) return;
+        
+        // If no data-content attribute, allow default behavior (for external links like analytics)
+        if (!contentId) {
+          return; // Allow default link behavior
+        }
+        
+        e.preventDefault();
         
         // Remove active class from all nav items
         navItems.forEach(navItem => {
@@ -1082,46 +1086,58 @@ document.addEventListener('DOMContentLoaded', () => {
       workshopForm.reset();
     });
     
-    // Handle form submission
-    workshopForm.addEventListener('submit', (e) => {
+    // Handle form submission (persist to backend)
+    workshopForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired. Please log in again.');
+        window.location.href = 'login.html';
+        return;
+      }
       
-      // Collect form data
       const formData = new FormData(workshopForm);
-      const workshopData = {
+      const payload = {
         title: formData.get('title'),
+        description: formData.get('description'),
+        category: 'workshop',
         domain: formData.get('domain'),
-        organizer: formData.get('organizer'),
-        duration: formData.get('duration'),
+        posterUrl: formData.get('posterLink') || 'https://via.placeholder.com/600x300?text=Workshop',
+        formLink: formData.get('formLink') || null,
         startDate: formData.get('startDate'),
         endDate: formData.get('endDate'),
-        deadline: formData.get('deadline'),
-        posterLink: formData.get('posterLink') || '',
-        maxTeamMembers: formData.get('maxTeamMembers'),
-        description: formData.get('description'),
-        options: {
-          openForAll: formData.has('openForAll'),
-          certificatesProvided: formData.has('certificatesProvided'),
-          requiresLaptop: formData.has('requiresLaptop'),
-          externalEntriesAllowed: formData.has('externalEntriesAllowed')
-        }
+        duration: formData.get('duration'),
+        coordinatorName: formData.get('organizer') || 'Admin',
+        coordinatorEmail: 'admin@kongu.edu',
+        venue: formData.get('venue') || 'TBD',
+        maxParticipants: parseInt(formData.get('maxTeamMembers') || '100'),
+        registrationDeadline: formData.get('deadline'),
+        eventType: { intraDept: true, interDept: false, online: false, offline: true },
+        certificationProvided: !!formData.get('certificatesProvided')
       };
       
-      // Log the form data
-      console.log('Workshop Data:', workshopData);
-      
-      // Create workshop card
-      createWorkshopCard(workshopData);
-      
-      // Hide form and reset
-      workshopFormContainer.style.display = 'none';
-      addWorkshopBtn.style.display = 'flex';
-      workshopForm.reset();
-      
-      // Remove empty state if it exists
-      const emptyState = workshopsContainer.querySelector('.empty-state');
-      if (emptyState) {
-        emptyState.remove();
+      try {
+        const res = await fetch(`${window.location.origin}/api/events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || 'Failed to create workshop');
+        }
+        renderSavedWorkshop(json.event);
+        workshopFormContainer.style.display = 'none';
+        addWorkshopBtn.style.display = 'flex';
+        workshopForm.reset();
+        const emptyState = workshopsContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+      } catch (err) {
+        console.error('Create workshop error:', err);
+        alert(err.message || 'Failed to create workshop');
       }
     });
   }
@@ -1207,6 +1223,106 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add card to container
     workshopsContainer.appendChild(card);
   }
+
+  // Load existing workshops from backend
+  async function loadAdminWorkshops() {
+    try {
+      const res = await fetch(`${window.location.origin}/api/events?category=workshop&limit=100`);
+      const json = await res.json();
+      if (!json.success) return;
+      workshopsContainer.innerHTML = '';
+      if (!json.events || json.events.length === 0) {
+        workshopsContainer.innerHTML = '<p class="empty-state">No workshops added yet. Click "Add Workshop" to create one.</p>';
+        return;
+      }
+      json.events.forEach(evt => renderSavedWorkshop(evt));
+    } catch (e) {
+      console.error('Failed to load workshops (admin):', e);
+    }
+  }
+
+  // Render a saved backend workshop with edit/delete actions
+  function renderSavedWorkshop(evt) {
+    const card = document.createElement('div');
+    card.className = 'workshop-card';
+    card.dataset.eventId = evt._id;
+    const startDate = evt.startDate ? new Date(evt.startDate).toLocaleDateString() : '';
+    const endDate = evt.endDate ? new Date(evt.endDate).toLocaleDateString() : '';
+    const deadline = evt.registrationDeadline ? new Date(evt.registrationDeadline).toLocaleDateString() : '';
+    card.innerHTML = `
+      <div class="workshop-image" style="${evt.posterUrl ? `background-image: url('${evt.posterUrl}')` : ''}">
+        ${!evt.posterUrl ? '🔧' : ''}
+      </div>
+      <div class="workshop-content">
+        <h3 class="workshop-title">${evt.title || 'Workshop'}</h3>
+        <p class="workshop-domain">${evt.domain || ''}</p>
+        <div class="workshop-details">
+          <div class="workshop-detail"><span class="workshop-detail-icon">👤</span><span>${evt.coordinatorName || 'Admin'}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">📅</span><span>${startDate} to ${endDate} ${evt.duration ? `(${evt.duration})` : ''}</span></div>
+          ${deadline ? `<div class="workshop-detail"><span class="workshop-detail-icon">⏰</span><span>Register by: ${deadline}</span></div>` : ''}
+          <div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>Max: ${evt.maxParticipants || 0}</span></div>
+        </div>
+        <div class="workshop-actions">
+          <button class="workshop-action-btn edit-btn">Edit</button>
+          <button class="workshop-action-btn delete-btn">Delete</button>
+        </div>
+      </div>
+    `;
+    const editBtn = card.querySelector('.edit-btn');
+    const deleteBtn = card.querySelector('.delete-btn');
+    editBtn.addEventListener('click', () => onEditWorkshop(evt, card));
+    deleteBtn.addEventListener('click', () => onDeleteWorkshop(evt._id, card));
+    workshopsContainer.appendChild(card);
+  }
+
+  async function onDeleteWorkshop(eventId, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    if (!confirm('Delete this workshop?')) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
+      card.remove();
+      if (workshopsContainer.children.length === 0) {
+        workshopsContainer.innerHTML = '<p class="empty-state">No workshops added yet. Click "Add Workshop" to create one.</p>';
+      }
+    } catch (e) {
+      console.error('Delete workshop failed:', e);
+      alert(e.message || 'Failed to delete');
+    }
+  }
+
+  async function onEditWorkshop(evt, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    const newTitle = prompt('Update title', evt.title || '');
+    if (newTitle === null) return;
+    const newDescription = prompt('Update description', evt.description || '');
+    if (newDescription === null) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${evt._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newTitle, description: newDescription })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Update failed');
+      card.querySelector('.workshop-title').textContent = json.event.title;
+    } catch (e) {
+      console.error('Update workshop failed:', e);
+      alert(e.message || 'Failed to update');
+    }
+  }
+
+  // Initial load
+  loadAdminWorkshops();
   
   // Initialize Hackathon Management UI
   function initHackathonUI() {
@@ -1311,16 +1427,18 @@ document.addEventListener('DOMContentLoaded', () => {
       hackathonForm.reset();
     });
     
-    // Handle form submission
-    hackathonForm.addEventListener('submit', (e) => {
+    // Handle form submission (persist to backend)
+    hackathonForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!validateHackathonForm()) return;
       
-      // Validate form
-      if (!validateHackathonForm()) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired. Please log in again.');
+        window.location.href = 'login.html';
         return;
       }
       
-      // Collect form data
       const formData = new FormData(hackathonForm);
       const domainCount = parseInt(formData.get('domainCount')) || 1;
       
@@ -1341,41 +1459,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       
-      // Create hackathon data object
-      const hackathonData = {
+      // Build backend payload per Event model
+      const payload = {
         title: formData.get('title'),
-        domains: domains,
-        mode: formData.get('mode'),
-        maxTeamSize: formData.get('maxTeamSize'),
-        deadline: formData.get('deadline'),
+        description: formData.get('problemStatement'),
+        category: 'hackathon',
+        domain: domains.map(d => d.name).join(', '),
+        posterUrl: formData.get('posterLink') || 'https://via.placeholder.com/600x300?text=Hackathon',
+        formLink: formData.get('formLink') || null,
         startDate: formData.get('startDate'),
         endDate: formData.get('endDate'),
-        judgingPanel: formData.get('judgingPanel') || '',
-        posterLink: formData.get('posterLink') || '',
-        problemStatement: formData.get('problemStatement'),
-        submissionRequirements: formData.get('submissionRequirements'),
-        options: {
-          externalParticipants: formData.has('externalParticipants'),
-          certificateProvided: formData.has('certificateProvided'),
-          requiresLaptop: formData.has('requiresLaptop')
+        duration: Math.ceil((new Date(formData.get('endDate')) - new Date(formData.get('startDate'))) / (1000 * 60 * 60 * 24)),
+        coordinatorName: domains[0]?.incharge || 'Admin',
+        coordinatorEmail: 'admin@kongu.edu',
+        venue: 'TBD',
+        maxParticipants: domains.reduce((sum, d) => sum + d.maxParticipants, 0),
+        registrationDeadline: formData.get('deadline'),
+        eventType: { intraDept: true, interDept: false, online: false, offline: true },
+        certificationProvided: !!formData.get('certificateProvided'),
+        // Store hackathon-specific data in additionalFields
+        additionalFields: {
+          domains: domains,
+          maxTeamSize: formData.get('maxTeamSize'),
+          mode: formData.get('mode'),
+          judgingPanel: formData.get('judgingPanel') || '',
+          submissionRequirements: formData.get('submissionRequirements'),
+          externalParticipants: !!formData.get('externalParticipants'),
+          requiresLaptop: !!formData.get('requiresLaptop')
         }
       };
       
-      // Log the form data
-      console.log('Hackathon Data:', hackathonData);
-      
-      // Create hackathon card
-      createHackathonCard(hackathonData);
-      
-      // Hide form and reset
-      hackathonFormContainer.style.display = 'none';
-      addHackathonBtn.style.display = 'flex';
-      hackathonForm.reset();
-      
-      // Remove empty state if it exists
-      const emptyState = hackathonsContainer.querySelector('.empty-state');
-      if (emptyState) {
-        emptyState.remove();
+      try {
+        const res = await fetch(`${window.location.origin}/api/events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || 'Failed to create hackathon');
+        }
+        renderSavedHackathon(json.event);
+        hackathonFormContainer.style.display = 'none';
+        addHackathonBtn.style.display = 'flex';
+        hackathonForm.reset();
+        const emptyState = hackathonsContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+      } catch (err) {
+        console.error('Create hackathon error:', err);
+        alert(err.message || 'Failed to create hackathon');
       }
     });
   }
@@ -1633,7 +1768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Handle form submission
-    guestLectureForm.addEventListener('submit', (e) => {
+    guestLectureForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       // Validate form
@@ -1641,7 +1776,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      // Collect form data
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired. Please log in again.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
       const formData = new FormData(guestLectureForm);
       
       // Get selected years if not mandatory for all
@@ -1658,51 +1799,61 @@ document.addEventListener('DOMContentLoaded', () => {
       if (formData.has('bringLaptop')) specialRequirements.push('Bring Laptop');
       if (formData.has('preReadMaterial')) specialRequirements.push('Pre-read Material');
       
-      // Format time
-      const startTime = formData.get('startTime');
-      const endTime = formData.get('endTime');
-      const timeString = `${startTime} - ${endTime}`;
-      
-      // Create guest lecture data object
-      const guestLectureData = {
+      // Build backend payload
+      const payload = {
         title: formData.get('title'),
-        speakerName: formData.get('speakerName'),
-        speakerDesignation: formData.get('speakerDesignation'),
-        lectureTopic: formData.get('lectureTopic'),
         description: formData.get('description'),
-        posterLink: formData.get('posterLink') || '',
-        lectureDate: formData.get('lectureDate'),
-        timeString: timeString,
-        startTime: startTime,
-        endTime: endTime,
-        venue: formData.get('venue'),
-        mode: formData.get('mode'),
-        mandatoryForAll: formData.has('mandatoryForAll'),
-        selectedYears: selectedYears,
-        registrationDeadline: formData.get('registrationDeadline') || '',
-        maxParticipants: formData.get('maxParticipants') || '',
-        certificateProvided: formData.has('certificateProvided'),
-        specialRequirements: specialRequirements,
+        category: 'guest-lecture',
+        domain: formData.get('lectureTopic'),
+        posterUrl: formData.get('posterLink') || 'https://via.placeholder.com/600x300?text=Guest+Lecture',
+        startDate: formData.get('lectureDate'),
+        endDate: formData.get('lectureDate'), // Same as start date for single-day events
+        duration: '1 day',
         coordinatorName: formData.get('coordinatorName'),
-        coordinatorContact: formData.get('coordinatorContact')
+        coordinatorEmail: 'admin@kongu.edu',
+        venue: formData.get('venue'),
+        maxParticipants: formData.get('maxParticipants') ? parseInt(formData.get('maxParticipants')) : null,
+        registrationDeadline: formData.get('registrationDeadline') || null,
+        eventType: { intraDept: true, interDept: false, online: false, offline: true },
+        certificationProvided: !!formData.get('certificateProvided'),
+        // Store guest lecture-specific data in additionalFields
+        additionalFields: {
+          speakerName: formData.get('speakerName'),
+          speakerDesignation: formData.get('speakerDesignation'),
+          lectureTopic: formData.get('lectureTopic'),
+          startTime: formData.get('startTime'),
+          endTime: formData.get('endTime'),
+          mode: formData.get('mode'),
+          mandatoryForAll: !!formData.get('mandatoryForAll'),
+          selectedYears: selectedYears,
+          specialRequirements: specialRequirements,
+          coordinatorContact: formData.get('coordinatorContact')
+        }
       };
       
-      // Log the form data
-      console.log('Guest Lecture Data:', guestLectureData);
-      
-      // Create guest lecture card
-      createGuestLectureCard(guestLectureData);
-      
-      // Hide form and reset
-      guestLectureFormContainer.style.display = 'none';
-      addGuestLectureBtn.style.display = 'flex';
-      guestLectureForm.reset();
-      yearSelectionContainer.style.display = 'block'; // Reset year selection visibility
-      
-      // Remove empty state if it exists
-      const emptyState = guestLecturesContainer.querySelector('.empty-state');
-      if (emptyState) {
-        emptyState.remove();
+      try {
+        const res = await fetch(`${window.location.origin}/api/events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || 'Failed to create guest lecture');
+        }
+        renderSavedGuestLecture(json.event);
+        guestLectureFormContainer.style.display = 'none';
+        addGuestLectureBtn.style.display = 'flex';
+        guestLectureForm.reset();
+        yearSelectionContainer.style.display = 'block'; // Reset year selection visibility
+        const emptyState = guestLecturesContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+      } catch (err) {
+        console.error('Create guest lecture error:', err);
+        alert(err.message || 'Failed to create guest lecture');
       }
     });
   }
@@ -1775,79 +1926,77 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   }
   
-  // Function to create guest lecture card
-  function createGuestLectureCard(lecture) {
-    // Create card element
+  // Load existing guest lectures from backend
+  async function loadAdminGuestLectures() {
+    try {
+      const res = await fetch(`${window.location.origin}/api/events?category=guest-lecture&limit=100`);
+      const json = await res.json();
+      if (!json.success) return;
+      guestLecturesContainer.innerHTML = '';
+      if (!json.events || json.events.length === 0) {
+        guestLecturesContainer.innerHTML = '<p class="empty-state">No guest lectures added yet. Click "Add Guest Lecture" to create one.</p>';
+        return;
+      }
+      json.events.forEach(evt => renderSavedGuestLecture(evt));
+    } catch (e) {
+      console.error('Failed to load guest lectures (admin):', e);
+    }
+  }
+  
+  // Render a saved backend guest lecture with edit/delete actions
+  function renderSavedGuestLecture(evt) {
     const card = document.createElement('div');
-    card.className = 'guest-lecture-card';
+    card.className = 'workshop-card'; // Reuse workshop card styling
+    card.dataset.eventId = evt._id;
+    const lectureDate = evt.startDate ? new Date(evt.startDate).toLocaleDateString() : '';
+    const deadline = evt.registrationDeadline ? new Date(evt.registrationDeadline).toLocaleDateString() : '';
     
-    // Format date
-    const lectureDate = new Date(lecture.lectureDate).toLocaleDateString();
-    const registrationDeadline = lecture.registrationDeadline ? new Date(lecture.registrationDeadline).toLocaleDateString() : '';
+    // Extract guest lecture-specific data
+    const additionalFields = evt.additionalFields || {};
+    const speakerName = additionalFields.speakerName || '';
+    const speakerDesignation = additionalFields.speakerDesignation || '';
+    const lectureTopic = additionalFields.lectureTopic || evt.domain || '';
+    const startTime = additionalFields.startTime || '';
+    const endTime = additionalFields.endTime || '';
+    const mode = additionalFields.mode || 'TBD';
+    const mandatoryForAll = additionalFields.mandatoryForAll || false;
+    const selectedYears = additionalFields.selectedYears || [];
+    const specialRequirements = additionalFields.specialRequirements || [];
+    const coordinatorContact = additionalFields.coordinatorContact || '';
     
-    // Create audience info text
+    // Create time string
+    const timeString = startTime && endTime ? `${startTime} - ${endTime}` : 'TBD';
+    
+    // Create audience info
     let audienceInfo = '';
-    if (lecture.mandatoryForAll) {
-      audienceInfo = `<div class="audience-info">Mandatory for All Students <span class="mandatory-badge">Required</span></div>`;
-    } else if (lecture.selectedYears.length > 0) {
-      audienceInfo = `<div class="audience-info">For: ${lecture.selectedYears.join(', ')} Students</div>`;
+    if (mandatoryForAll) {
+      audienceInfo = `<div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>Mandatory for All Students</span></div>`;
+    } else if (selectedYears.length > 0) {
+      audienceInfo = `<div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>For: ${selectedYears.join(', ')} Students</span></div>`;
     }
     
     // Create special requirements tags
-    const specialRequirementsTags = lecture.specialRequirements.map(req => 
-      `<span class="workshop-tag">${req}</span>`
-    ).join('');
+    const featuresTags = specialRequirements.map(req => `<span class="workshop-tag">${req}</span>`).join('');
     
-    // Set card HTML
     card.innerHTML = `
-      <div class="lecture-image" style="${lecture.posterLink ? `background-image: url('${lecture.posterLink}')` : ''}">
-        ${!lecture.posterLink ? '👨‍🏫' : ''}
+      <div class="workshop-image" style="${evt.posterUrl ? `background-image: url('${evt.posterUrl}')` : ''}">
+        ${!evt.posterUrl ? '👨‍🏫' : ''}
       </div>
-      <div class="lecture-content">
-        <h3 class="lecture-title">${lecture.title}</h3>
-        <p class="speaker-info">${lecture.speakerName}, ${lecture.speakerDesignation}</p>
-        
+      <div class="workshop-content">
+        <h3 class="workshop-title">${evt.title || 'Guest Lecture'}</h3>
+        <p class="workshop-domain">${lectureTopic}</p>
         <div class="workshop-details">
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">📚</span>
-            <span>${lecture.lectureTopic}</span>
-          </div>
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">📅</span>
-            <span>${lectureDate}</span>
-          </div>
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">⏰</span>
-            <span>${lecture.timeString}</span>
-          </div>
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">📍</span>
-            <span>${lecture.venue} (${lecture.mode})</span>
-          </div>
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">👤</span>
-            <span>Coordinator: ${lecture.coordinatorName} (${lecture.coordinatorContact})</span>
-          </div>
-          ${lecture.maxParticipants ? `
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">👥</span>
-            <span>Max Participants: ${lecture.maxParticipants}</span>
-          </div>` : ''}
-          ${registrationDeadline ? `
-          <div class="workshop-detail">
-            <span class="workshop-detail-icon">🗓️</span>
-            <span>Register by: ${registrationDeadline}</span>
-          </div>` : ''}
+          <div class="workshop-detail"><span class="workshop-detail-icon">👨‍🏫</span><span>${speakerName}, ${speakerDesignation}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">📅</span><span>${lectureDate}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">⏰</span><span>${timeString}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">📍</span><span>${evt.venue || 'TBD'} (${mode})</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">👤</span><span>Coordinator: ${evt.coordinatorName || 'Admin'} (${coordinatorContact})</span></div>
+          ${evt.maxParticipants ? `<div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>Max: ${evt.maxParticipants}</span></div>` : ''}
+          ${deadline ? `<div class="workshop-detail"><span class="workshop-detail-icon">⏰</span><span>Register by: ${deadline}</span></div>` : ''}
+          ${audienceInfo}
         </div>
-        
-        ${audienceInfo}
-        
-        ${lecture.certificateProvided || lecture.specialRequirements.length > 0 ? `
-        <div class="workshop-tags">
-          ${lecture.certificateProvided ? '<span class="workshop-tag">Certificate Provided</span>' : ''}
-          ${specialRequirementsTags}
-        </div>` : ''}
-        
+        ${featuresTags ? `<div class="workshop-tags">${featuresTags}</div>` : ''}
+        ${evt.certificationProvided ? `<div class="workshop-tags"><span class="workshop-tag">Certificate Provided</span></div>` : ''}
         <div class="workshop-actions">
           <button class="workshop-action-btn edit-btn">Edit</button>
           <button class="workshop-action-btn delete-btn">Delete</button>
@@ -1855,28 +2004,543 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
     
-    // Add event listeners for edit and delete buttons
     const editBtn = card.querySelector('.edit-btn');
     const deleteBtn = card.querySelector('.delete-btn');
-    
-    editBtn.addEventListener('click', () => {
-      console.log('Edit guest lecture:', lecture.title);
-      // Edit functionality would go here
-    });
-    
-    deleteBtn.addEventListener('click', () => {
-      console.log('Delete guest lecture:', lecture.title);
-      card.remove();
-      
-      // Show empty state if no guest lectures left
-      if (guestLecturesContainer.children.length === 0) {
-        guestLecturesContainer.innerHTML = `
-          <p class="empty-state">No guest lectures added yet. Click "Add Guest Lecture" to create one.</p>
-        `;
-      }
-    });
-    
-    // Add card to container
+    editBtn.addEventListener('click', () => onEditGuestLecture(evt, card));
+    deleteBtn.addEventListener('click', () => onDeleteGuestLecture(evt._id, card));
     guestLecturesContainer.appendChild(card);
   }
+  
+  async function onDeleteGuestLecture(eventId, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    if (!confirm('Delete this guest lecture?')) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
+      card.remove();
+      if (guestLecturesContainer.children.length === 0) {
+        guestLecturesContainer.innerHTML = '<p class="empty-state">No guest lectures added yet. Click "Add Guest Lecture" to create one.</p>';
+      }
+    } catch (e) {
+      console.error('Delete guest lecture failed:', e);
+      alert(e.message || 'Failed to delete');
+    }
+  }
+  
+  async function onEditGuestLecture(evt, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    
+    // For now, use simple prompts for editing
+    // In a full implementation, you would populate the form with existing data
+    const newTitle = prompt('Update title', evt.title || '');
+    if (newTitle === null) return;
+    const newDescription = prompt('Update description', evt.description || '');
+    if (newDescription === null) return;
+    
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${evt._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newTitle, description: newDescription })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Update failed');
+      card.querySelector('.workshop-title').textContent = json.event.title;
+    } catch (e) {
+      console.error('Update guest lecture failed:', e);
+      alert(e.message || 'Failed to update');
+    }
+  }
+
+  // Load existing hackathons from backend
+  async function loadAdminHackathons() {
+    try {
+      const res = await fetch(`${window.location.origin}/api/events?category=hackathon&limit=100`);
+      const json = await res.json();
+      if (!json.success) return;
+      hackathonsContainer.innerHTML = '';
+      if (!json.events || json.events.length === 0) {
+        hackathonsContainer.innerHTML = '<p class="empty-state">No hackathons added yet. Click "Add Hackathon" to create one.</p>';
+        return;
+      }
+      json.events.forEach(evt => renderSavedHackathon(evt));
+    } catch (e) {
+      console.error('Failed to load hackathons (admin):', e);
+    }
+  }
+
+  // Render a saved backend hackathon with edit/delete actions
+  function renderSavedHackathon(evt) {
+    const card = document.createElement('div');
+    card.className = 'workshop-card'; // Reuse workshop card styling
+    card.dataset.eventId = evt._id;
+    const startDate = evt.startDate ? new Date(evt.startDate).toLocaleDateString() : '';
+    const endDate = evt.endDate ? new Date(evt.endDate).toLocaleDateString() : '';
+    const deadline = evt.registrationDeadline ? new Date(evt.registrationDeadline).toLocaleDateString() : '';
+    
+    // Extract hackathon-specific data
+    const additionalFields = evt.additionalFields || {};
+    const domains = additionalFields.domains || [];
+    const mode = additionalFields.mode || 'TBD';
+    const maxTeamSize = additionalFields.maxTeamSize || 'N/A';
+    const judgingPanel = additionalFields.judgingPanel || '';
+    
+    // Create domains list HTML
+    const domainsHTML = domains.map(domain => {
+      const domainTags = (domain.tags || []).map(tag => `<span class="workshop-tag">${tag}</span>`).join('');
+      return `
+        <div class="domain-block">
+          <div class="domain-header">
+            <h4 class="domain-title">${domain.name}</h4>
+          </div>
+          <div class="workshop-details">
+            <div class="workshop-detail">
+              <span class="workshop-detail-icon">👥</span>
+              <span>Max participants: ${domain.maxParticipants}</span>
+            </div>
+            <div class="workshop-detail">
+              <span class="workshop-detail-icon">👤</span>
+              <span>Incharge: ${domain.incharge}</span>
+            </div>
+            <div class="workshop-detail">
+              <span class="workshop-detail-icon">📞</span>
+              <span>Contact: ${domain.contact}</span>
+            </div>
+            ${domain.isPanelIncharge ? `
+            <div class="workshop-detail">
+              <span class="workshop-detail-icon">👨‍⚖️</span>
+              <span>Panel Incharge</span>
+            </div>` : ''}
+          </div>
+          ${domainTags ? `<div class="workshop-tags">${domainTags}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+    
+    // Create tags array from global options
+    const tags = [];
+    if (additionalFields.externalParticipants) tags.push('External Participants');
+    if (additionalFields.certificationProvided) tags.push('Certificate Provided');
+    if (additionalFields.requiresLaptop) tags.push('Requires Laptop');
+    
+    card.innerHTML = `
+      <div class="workshop-image" style="${evt.posterUrl ? `background-image: url('${evt.posterUrl}')` : ''}">
+        ${!evt.posterUrl ? '💻' : ''}
+      </div>
+      <div class="workshop-content">
+        <h3 class="workshop-title">${evt.title || 'Hackathon'}</h3>
+        <p class="workshop-domain">${domains.length} Domain${domains.length > 1 ? 's' : ''}</p>
+        <div class="workshop-details">
+          <div class="workshop-detail"><span class="workshop-detail-icon">🔄</span><span>Mode: ${mode}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">📅</span><span>${startDate} to ${endDate}</span></div>
+          ${deadline ? `<div class="workshop-detail"><span class="workshop-detail-icon">⏰</span><span>Register by: ${deadline}</span></div>` : ''}
+          <div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>Max team size: ${maxTeamSize}</span></div>
+          ${judgingPanel ? `<div class="workshop-detail"><span class="workshop-detail-icon">👨‍⚖️</span><span>Judging: ${judgingPanel}</span></div>` : ''}
+        </div>
+        <div class="domains-container">${domainsHTML}</div>
+        <div class="workshop-tags">${tags.map(tag => `<span class="workshop-tag">${tag}</span>`).join('')}</div>
+        <div class="workshop-actions">
+          <button class="workshop-action-btn edit-btn">Edit</button>
+          <button class="workshop-action-btn delete-btn">Delete</button>
+        </div>
+      </div>
+    `;
+    
+    const editBtn = card.querySelector('.edit-btn');
+    const deleteBtn = card.querySelector('.delete-btn');
+    editBtn.addEventListener('click', () => onEditHackathon(evt, card));
+    deleteBtn.addEventListener('click', () => onDeleteHackathon(evt._id, card));
+    hackathonsContainer.appendChild(card);
+  }
+
+  async function onDeleteHackathon(eventId, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    if (!confirm('Delete this hackathon?')) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
+      card.remove();
+      if (hackathonsContainer.children.length === 0) {
+        hackathonsContainer.innerHTML = '<p class="empty-state">No hackathons added yet. Click "Add Hackathon" to create one.</p>';
+      }
+    } catch (e) {
+      console.error('Delete hackathon failed:', e);
+      alert(e.message || 'Failed to delete');
+    }
+  }
+
+  async function onEditHackathon(evt, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    const newTitle = prompt('Update title', evt.title || '');
+    if (newTitle === null) return;
+    const newDescription = prompt('Update description', evt.description || '');
+    if (newDescription === null) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${evt._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newTitle, description: newDescription })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Update failed');
+      card.querySelector('.workshop-title').textContent = json.event.title;
+    } catch (e) {
+      console.error('Update hackathon failed:', e);
+      alert(e.message || 'Failed to update');
+    }
+  }
+
+  // Initial load
+  loadAdminHackathons();
+  
+  // Tech Symposiums Management Functionality
+  const techSymposiumsContent = document.getElementById('tech-symposiums-content');
+  let addTechSymposiumBtn;
+  let techSymposiumFormContainer;
+  let techSymposiumForm;
+  let cancelTechSymposiumBtn;
+  let techSymposiumsContainer;
+  
+  // Initialize Tech Symposiums UI when the tech symposiums tab is clicked
+  const techSymposiumsTab = document.querySelector('.nav-item[data-content="tech-symposiums"]');
+  if (techSymposiumsTab) {
+    techSymposiumsTab.addEventListener('click', () => {
+      // Initialize UI if not already initialized
+      if (!addTechSymposiumBtn) {
+        initTechSymposiumsUI();
+      }
+    });
+  }
+  
+  // Function to initialize Tech Symposiums UI
+  function initTechSymposiumsUI() {
+    // Create references to tech symposium elements
+    addTechSymposiumBtn = techSymposiumsContent.querySelector('#addTechSymposiumBtn');
+    techSymposiumFormContainer = techSymposiumsContent.querySelector('#techSymposiumFormContainer');
+    techSymposiumForm = techSymposiumsContent.querySelector('#techSymposiumForm');
+    cancelTechSymposiumBtn = techSymposiumsContent.querySelector('#cancelTechSymposiumBtn');
+    techSymposiumsContainer = techSymposiumsContent.querySelector('#techSymposiumsContainer');
+    
+    // Show tech symposium form
+    addTechSymposiumBtn.addEventListener('click', () => {
+      techSymposiumFormContainer.style.display = 'block';
+      addTechSymposiumBtn.style.display = 'none';
+      
+      // Scroll to form
+      techSymposiumFormContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    // Cancel tech symposium form
+    cancelTechSymposiumBtn.addEventListener('click', () => {
+      techSymposiumFormContainer.style.display = 'none';
+      addTechSymposiumBtn.style.display = 'flex';
+      techSymposiumForm.reset();
+    });
+    
+    // Handle form submission
+    techSymposiumForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Validate form
+      if (!validateTechSymposiumForm()) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired. Please log in again.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const formData = new FormData(techSymposiumForm);
+      
+      // Get eligibility years
+      const eligibility = [];
+      if (formData.has('secondYear')) eligibility.push('2nd Year');
+      if (formData.has('thirdYear')) eligibility.push('3rd Year');
+      if (formData.has('fourthYear')) eligibility.push('4th Year');
+      if (formData.has('finalYear')) eligibility.push('Final Year');
+      
+      // Get special features
+      const specialFeatures = [];
+      if (formData.has('paperPresentation')) specialFeatures.push('Paper Presentation');
+      if (formData.has('projectExhibition')) specialFeatures.push('Project Exhibition');
+      if (formData.has('technicalQuiz')) specialFeatures.push('Technical Quiz');
+      if (formData.has('posterPresentation')) specialFeatures.push('Poster Presentation');
+      if (formData.has('certificatesProvided')) specialFeatures.push('Certificates Provided');
+      if (formData.has('externalParticipants')) specialFeatures.push('External Participants Allowed');
+      if (formData.has('requiresLaptop')) specialFeatures.push('Requires Laptop');
+      
+      // Build backend payload
+      const payload = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        category: 'tech-symposium',
+        domain: formData.get('theme'),
+        posterUrl: formData.get('posterLink') || 'https://via.placeholder.com/600x300?text=Tech+Symposium',
+        startDate: formData.get('startDate'),
+        endDate: formData.get('endDate'),
+        duration: Math.ceil((new Date(formData.get('endDate')) - new Date(formData.get('startDate'))) / (1000 * 60 * 60 * 24)) + ' days',
+        coordinatorName: formData.get('organizer'),
+        coordinatorEmail: 'admin@kongu.edu',
+        venue: formData.get('venue'),
+        maxParticipants: parseInt(formData.get('maxParticipants')),
+        registrationDeadline: formData.get('registrationDeadline'),
+        eventType: { intraDept: true, interDept: false, online: false, offline: true },
+        certificationProvided: !!formData.get('certificatesProvided'),
+        // Store tech symposium-specific data in additionalFields
+        additionalFields: {
+          theme: formData.get('theme'),
+          department: formData.get('department'),
+          mode: formData.get('mode'),
+          keynoteSpeakers: formData.get('keynoteSpeakers') || '',
+          schedule: formData.get('schedule') || '',
+          specialFeatures: specialFeatures,
+          eligibility: eligibility,
+          externalParticipants: !!formData.get('externalParticipants'),
+          requiresLaptop: !!formData.get('requiresLaptop')
+        }
+      };
+      
+      try {
+        const res = await fetch(`${window.location.origin}/api/events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || 'Failed to create tech symposium');
+        }
+        renderSavedTechSymposium(json.event);
+        techSymposiumFormContainer.style.display = 'none';
+        addTechSymposiumBtn.style.display = 'flex';
+        techSymposiumForm.reset();
+        const emptyState = techSymposiumsContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+      } catch (err) {
+        console.error('Create tech symposium error:', err);
+        alert(err.message || 'Failed to create tech symposium');
+      }
+    });
+  }
+  
+  // Validate tech symposium form
+  function validateTechSymposiumForm() {
+    // Check required fields
+    const title = techSymposiumForm.querySelector('#symposiumTitle').value.trim();
+    const theme = techSymposiumForm.querySelector('#symposiumTheme').value.trim();
+    const organizer = techSymposiumForm.querySelector('#symposiumOrganizer').value.trim();
+    const department = techSymposiumForm.querySelector('#symposiumDepartment').value;
+    const startDate = techSymposiumForm.querySelector('#symposiumStartDate').value;
+    const endDate = techSymposiumForm.querySelector('#symposiumEndDate').value;
+    const registrationDeadline = techSymposiumForm.querySelector('#symposiumRegistrationDeadline').value;
+    const venue = techSymposiumForm.querySelector('#symposiumVenue').value.trim();
+    const mode = techSymposiumForm.querySelector('#symposiumMode').value;
+    const maxParticipants = techSymposiumForm.querySelector('#symposiumMaxParticipants').value;
+    const description = techSymposiumForm.querySelector('#symposiumDescription').value.trim();
+    
+    // Validate required fields
+    if (!title || !theme || !organizer || !department || !startDate || !endDate || 
+        !registrationDeadline || !venue || !mode || !maxParticipants || !description) {
+      alert('Please fill in all required fields');
+      return false;
+    }
+    
+    // Validate dates
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const registrationDeadlineObj = new Date(registrationDeadline);
+    
+    if (startDateObj > endDateObj) {
+      alert('End date must be after start date');
+      return false;
+    }
+    
+    if (registrationDeadlineObj > startDateObj) {
+      alert('Registration deadline must be before the symposium start date');
+      return false;
+    }
+    
+    // Validate max participants
+    if (parseInt(maxParticipants) < 1) {
+      alert('Max participants must be at least 1');
+      return false;
+    }
+    
+    // Validate eligibility (at least one year should be selected)
+    const secondYear = techSymposiumForm.querySelector('#secondYear').checked;
+    const thirdYear = techSymposiumForm.querySelector('#thirdYear').checked;
+    const fourthYear = techSymposiumForm.querySelector('#fourthYear').checked;
+    const finalYear = techSymposiumForm.querySelector('#finalYear').checked;
+    
+    if (!secondYear && !thirdYear && !fourthYear && !finalYear) {
+      alert('Please select at least one eligible year group');
+      return false;
+    }
+    
+    return true;
+  }
+  
+  // Load existing tech symposiums from backend
+  async function loadAdminTechSymposiums() {
+    try {
+      const res = await fetch(`${window.location.origin}/api/events?category=tech-symposium&limit=100`);
+      const json = await res.json();
+      if (!json.success) return;
+      techSymposiumsContainer.innerHTML = '';
+      if (!json.events || json.events.length === 0) {
+        techSymposiumsContainer.innerHTML = '<p class="empty-state">No tech symposiums added yet. Click "Add Tech Symposium" to create one.</p>';
+        return;
+      }
+      json.events.forEach(evt => renderSavedTechSymposium(evt));
+    } catch (e) {
+      console.error('Failed to load tech symposiums (admin):', e);
+    }
+  }
+  
+  // Render a saved backend tech symposium with edit/delete actions
+  function renderSavedTechSymposium(evt) {
+    const card = document.createElement('div');
+    card.className = 'workshop-card'; // Reuse workshop card styling
+    card.dataset.eventId = evt._id;
+    const startDate = evt.startDate ? new Date(evt.startDate).toLocaleDateString() : '';
+    const endDate = evt.endDate ? new Date(evt.endDate).toLocaleDateString() : '';
+    const deadline = evt.registrationDeadline ? new Date(evt.registrationDeadline).toLocaleDateString() : '';
+    
+    // Extract tech symposium-specific data
+    const additionalFields = evt.additionalFields || {};
+    const theme = additionalFields.theme || evt.domain || '';
+    const department = additionalFields.department || '';
+    const mode = additionalFields.mode || 'TBD';
+    const keynoteSpeakers = additionalFields.keynoteSpeakers || '';
+    const schedule = additionalFields.schedule || '';
+    const specialFeatures = additionalFields.specialFeatures || [];
+    const eligibility = additionalFields.eligibility || [];
+    
+    // Create special features tags
+    const featuresTags = specialFeatures.map(feature => `<span class="workshop-tag">${feature}</span>`).join('');
+    
+    // Create eligibility tags
+    const eligibilityTags = eligibility.map(year => `<span class="workshop-tag">${year}</span>`).join('');
+    
+    card.innerHTML = `
+      <div class="workshop-image" style="${evt.posterUrl ? `background-image: url('${evt.posterUrl}')` : ''}">
+        ${!evt.posterUrl ? '🎓' : ''}
+      </div>
+      <div class="workshop-content">
+        <h3 class="workshop-title">${evt.title || 'Tech Symposium'}</h3>
+        <p class="workshop-domain">${theme}</p>
+        <div class="workshop-details">
+          <div class="workshop-detail"><span class="workshop-detail-icon">👤</span><span>${evt.coordinatorName || 'Admin'}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">🏢</span><span>${department}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">🔄</span><span>Mode: ${mode}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">📅</span><span>${startDate} to ${endDate}</span></div>
+          ${deadline ? `<div class="workshop-detail"><span class="workshop-detail-icon">⏰</span><span>Register by: ${deadline}</span></div>` : ''}
+          <div class="workshop-detail"><span class="workshop-detail-icon">📍</span><span>${evt.venue || 'TBD'}</span></div>
+          <div class="workshop-detail"><span class="workshop-detail-icon">👥</span><span>Max: ${evt.maxParticipants || 0}</span></div>
+        </div>
+        ${keynoteSpeakers ? `
+        <div class="workshop-detail">
+          <span class="workshop-detail-icon">🎤</span>
+          <span>Keynote Speakers: ${keynoteSpeakers}</span>
+        </div>` : ''}
+        ${schedule ? `
+        <div class="workshop-detail">
+          <span class="workshop-detail-icon">📋</span>
+          <span>Schedule: ${schedule}</span>
+        </div>` : ''}
+        ${featuresTags ? `<div class="workshop-tags">${featuresTags}</div>` : ''}
+        ${eligibilityTags ? `<div class="workshop-tags">${eligibilityTags}</div>` : ''}
+        <div class="workshop-actions">
+          <button class="workshop-action-btn edit-btn">Edit</button>
+          <button class="workshop-action-btn delete-btn">Delete</button>
+        </div>
+      </div>
+    `;
+    
+    const editBtn = card.querySelector('.edit-btn');
+    const deleteBtn = card.querySelector('.delete-btn');
+    editBtn.addEventListener('click', () => onEditTechSymposium(evt, card));
+    deleteBtn.addEventListener('click', () => onDeleteTechSymposium(evt._id, card));
+    techSymposiumsContainer.appendChild(card);
+  }
+  
+  async function onDeleteTechSymposium(eventId, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    if (!confirm('Delete this tech symposium?')) return;
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Delete failed');
+      card.remove();
+      if (techSymposiumsContainer.children.length === 0) {
+        techSymposiumsContainer.innerHTML = '<p class="empty-state">No tech symposiums added yet. Click "Add Tech Symposium" to create one.</p>';
+      }
+    } catch (e) {
+      console.error('Delete tech symposium failed:', e);
+      alert(e.message || 'Failed to delete');
+    }
+  }
+  
+  async function onEditTechSymposium(evt, card) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Session expired. Please log in again.');
+    
+    // For now, use simple prompts for editing
+    // In a full implementation, you would populate the form with existing data
+    const newTitle = prompt('Update title', evt.title || '');
+    if (newTitle === null) return;
+    const newDescription = prompt('Update description', evt.description || '');
+    if (newDescription === null) return;
+    
+    try {
+      const res = await fetch(`${window.location.origin}/api/events/${evt._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newTitle, description: newDescription })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Update failed');
+      card.querySelector('.workshop-title').textContent = json.event.title;
+    } catch (e) {
+      console.error('Update tech symposium failed:', e);
+      alert(e.message || 'Failed to update');
+    }
+  }
+  
+  // Initial load for tech symposiums
+  loadAdminTechSymposiums();
+  
+  // Initial load for guest lectures
+  loadAdminGuestLectures();
 });

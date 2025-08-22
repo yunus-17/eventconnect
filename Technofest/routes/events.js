@@ -10,6 +10,8 @@ const router = express.Router();
 router.get('/', [
   query('category').optional().isIn(['workshop', 'hackathon', 'tech-symposium', 'guest-lecture']),
   query('status').optional().isIn(['upcoming', 'ongoing', 'completed', 'cancelled']),
+  // scope=intra|inter to filter department scope
+  query('scope').optional().isIn(['intra', 'inter']),
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('page').optional().isInt({ min: 1 })
 ], async (req, res) => {
@@ -23,13 +25,15 @@ router.get('/', [
       });
     }
 
-    const { category, status, limit = 10, page = 1 } = req.query;
+    const { category, status, scope, limit = 10, page = 1 } = req.query;
     const skip = (page - 1) * limit;
 
     // Build query
     const query = {};
     if (category) query.category = category;
     if (status) query.status = status;
+    if (scope === 'intra') query['eventType.intraDept'] = true;
+    if (scope === 'inter') query['eventType.interDept'] = true;
 
     const events = await Event.find(query)
       .populate('createdBy', 'name email')

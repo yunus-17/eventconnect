@@ -53,6 +53,10 @@ app.get('/admin-analytics', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-analytics.html'));
 });
 
+app.get('/eventconnect-admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'eventconnect-admin.html'));
+});
+
 // API route to get all students (admin only)
 app.get('/api/students', async (req, res) => {
   try {

@@ -122,6 +122,11 @@ async function handleLogin(type, data) {
       localStorage.setItem('token', result.token);
       localStorage.setItem('user', JSON.stringify(result.user));
       
+      // Store CGPA separately if available (for student logins)
+      if (result.cgpa !== undefined) {
+        localStorage.setItem('studentCgpa', result.cgpa);
+      }
+      
       // Show success message
       showSuccess(result.message);
       
